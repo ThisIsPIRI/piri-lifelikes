@@ -1,7 +1,9 @@
-package com.thisispiri.lifelike;
+package com.thisispiri.lifelike.andr;
 
 import android.preference.PreferenceFragment;
 import android.os.Bundle;
+
+import com.thisispiri.lifelike.R;
 
 public class SettingFragment extends PreferenceFragment {
 	@Override public void onCreate(Bundle savedInstanceState) {

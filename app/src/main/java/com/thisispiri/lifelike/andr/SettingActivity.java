@@ -1,4 +1,4 @@
-package com.thisispiri.lifelike;
+package com.thisispiri.lifelike.andr;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;

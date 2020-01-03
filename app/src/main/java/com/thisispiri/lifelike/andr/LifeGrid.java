@@ -1,4 +1,4 @@
-package com.thisispiri.lifelike;
+package com.thisispiri.lifelike.andr;
 
 import android.content.Context;
 import android.graphics.Canvas;

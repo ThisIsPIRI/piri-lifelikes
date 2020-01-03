@@ -9,7 +9,7 @@
 		android:supportsRtl="true"
 		android:theme="@style/Theme.AppCompat.NoActionBar">
 		<activity
-			android:name="com.thisispiri.lifelike.MainActivity"
+			android:name="com.thisispiri.lifelike.andr.MainActivity"
 			android:screenOrientation="portrait">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -17,7 +17,7 @@
 			</intent-filter>
 		</activity>
 		<activity
-			android:name="com.thisispiri.lifelike.SettingActivity"
+			android:name="com.thisispiri.lifelike.andr.SettingActivity"
 			android:screenOrientation="portrait"/>
 	</application>
 
