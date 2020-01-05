@@ -23,7 +23,7 @@ import java.util.Random;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
-	public int cellSize, width, height;
+	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
 	private boolean[][] grid;
@@ -77,21 +77,21 @@ public class MainActivity extends AppCompatActivity {
 				killNeighbors[Integer.valueOf(s)] = true;
 		}
 	}
-	@Override public void onStart() { //refresh values
+	@Override public void onStart() {
 		super.onStart();
 		int cellSizeTemp = cellSize;
 		updatePreferences();
-		//If cell size has changed, readjust array size and redraw
+		//If cell size has changed, readjust array size and redraw. Always true after onCreate
 		if(cellSize != cellSizeTemp) {
-			boolean[][] temp = new boolean[height][width];
-			for(int i = 0;i < height;i++)
-				temp[i] = Arrays.copyOf(grid[i], width);
+			boolean[][] gridTemp = grid;
 			width = screenWidth / cellSize;
 			height = screenHeight / cellSize;
 			grid = new boolean[height][width];
-			for(int i = 0;i < Math.min(temp.length, height);i++)
-				grid[i] = Arrays.copyOf(temp[i], width);
 			next = new boolean[height][width];
+			if(gridTemp != null) { //Copy over the previous grid if one exists
+				for(int i = 0;i < Math.min(gridTemp.length, height);i++)
+					grid[i] = Arrays.copyOf(gridTemp[i], width);
+			}
 		}
 		simulator = new LifeSimulator(width, height, createNeighbors, killNeighbors);
 		lifeGrid.setData(grid, cellSize, height, width, cellColor, backgroundColor);
@@ -105,13 +105,7 @@ public class MainActivity extends AppCompatActivity {
 		getWindowManager().getDefaultDisplay().getSize(screenSize);
 		screenHeight = (int) (screenSize.y * 0.9);
 		screenWidth = (screenSize.x);
-		updatePreferences();
 
-		//initialize grid
-		width = screenWidth / cellSize;
-		height = screenHeight / cellSize;
-		grid = new boolean[height][width];
-		next = new boolean[height][width];
 		setContentView(R.layout.activity_main);
 		lifeGrid = findViewById(R.id.view);
 		lifeGrid.setOnTouchListener(tLis);

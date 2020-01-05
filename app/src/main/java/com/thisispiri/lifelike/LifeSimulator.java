@@ -1,5 +1,6 @@
 package com.thisispiri.lifelike;
 
+/**Simulates a life-like environment.*/
 public class LifeSimulator {
 	private final static int[] xP = {0, 1, 1, 1, 0, -1, -1, -1};
 	private final static int[] yP = {-1, -1, 0, 1, 1, 1, 0, -1};
