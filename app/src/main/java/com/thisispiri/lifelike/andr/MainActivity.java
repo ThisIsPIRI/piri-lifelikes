@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
 		simulator = new LifeSimulator(width, height, createNeighbors, killNeighbors);
 		lifeGrid.setData(grid, cellSize, height, width, cellColor, backgroundColor);
 		lifeGrid.invalidate();
+		//Just so setting and clear buttons don't crash the app when pressed before start
+		mainThread = new LifeThread(simulator, lifecycle, threadCallback, grid, next);
 	}
 
 	@Override protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 		lifeGrid.setOnTouchListener(tLis);
 
 		//initialize Button references
-		LifeButtonListener bLis = new LifeButtonListener(this);
+		LifeButtonListener bLis = new LifeButtonListener();
 		start = findViewById(R.id.start);
 		start.setOnClickListener(bLis);
 		findViewById(R.id.setting).setOnClickListener(bLis);
@@ -124,12 +126,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	//handle button click events
-	private class LifeButtonListener implements View.OnClickListener
-	{
-		MainActivity activity;
-		LifeButtonListener(MainActivity activity) {
-			this.activity = activity;
-		}
+	private class LifeButtonListener implements View.OnClickListener {
 		@Override public void onClick(View v) {
 			switch(v.getId()) {
 			case R.id.start:
@@ -150,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 				mainThread.stopped = true;
 				start.setText(R.string.start);
 				Intent toSetting = new Intent(MainActivity.this, SettingActivity.class);
-				activity.startActivityForResult(toSetting, 0);
+				MainActivity.this.startActivityForResult(toSetting, 0);
 				break;
 			case R.id.clear:
 				isPlaying = false;

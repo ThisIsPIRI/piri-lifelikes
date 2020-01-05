@@ -2,8 +2,6 @@ package com.thisispiri.lifelike;
 
 /**Simulates a life-like environment.*/
 public class LifeSimulator {
-	private final static int[] xP = {0, 1, 1, 1, 0, -1, -1, -1};
-	private final static int[] yP = {-1, -1, 0, 1, 1, 1, 0, -1};
 	public int width, height;
 	public boolean[] createNeighbors, killNeighbors;
 	public LifeSimulator(int width, int height, boolean[] createNeighbors, boolean[] killNeighbors) {
@@ -12,7 +10,8 @@ public class LifeSimulator {
 		this.createNeighbors = createNeighbors;
 		this.killNeighbors = killNeighbors;
 	}
-	/**Simulates one step of life and returns the result in a new array.*/
+	/**Simulates one step of life and returns the result in a newly allocated array.
+	 * Slow compared to {@link LifeSimulator#step(boolean[][], boolean[][])}*/
 	public boolean[][] step(boolean[][] grid) {
 		boolean[][] result = new boolean[height][width];
 		step(grid, result);
@@ -52,13 +51,6 @@ public class LifeSimulator {
 		if(x < width - 1)
 			if(grid[y][x+1]) sum++;
 
-		return sum;
-	}
-	private int cellCheck(int x, int y, boolean[][] grid) {
-		int sum = 0;
-		for(int i = 0;i < 8;i++) {
-			if(grid[y + yP[i]][x + xP[i]]) sum++;
-		}
 		return sum;
 	}
 }

@@ -22,6 +22,7 @@ public class LifeThread extends Thread {
 
 	@Override public void run() {
 		while(!stopped) {
+			long timeStarted = System.currentTimeMillis();
 			//Check the entire grid to determine if cells are to die or not
 			sim.step(grid, next);
 			//Apply overrides
@@ -31,7 +32,7 @@ public class LifeThread extends Thread {
 				}
 				overrideList.clear();
 			}
-			//Swap Arrays. We don't need the values in the previous grid anymore, so we can safely rename it to next to be overwritten
+			//Swap arrays to avoid allocation. The old values aren't needed, so we can safely rename it to next to be overwritten
 			//TODO: Sometimes, cells drawn while paused aren't shown, though they do when the simulation starts again.
 			boolean[][] tempArray = grid;
 			grid = next;
@@ -39,8 +40,9 @@ public class LifeThread extends Thread {
 			//Signal that a cycle has finished
 			callback.run();
 			//Handle interrupts
+			long timeToSleep = lifecycle - (System.currentTimeMillis() - timeStarted);
 			try {
-				Thread.sleep(lifecycle);
+				if(timeToSleep > 0) Thread.sleep(timeToSleep);
 			}
 			catch(InterruptedException e) {
 				break;
