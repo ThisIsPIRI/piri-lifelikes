@@ -1,9 +1,11 @@
 package com.thisispiri.lifelike;
 
-/**Simulates a life-like environment.*/
+/**Simulates a life-like environment. Coordinates begin at upper left (0,0) and end at lower right (height,width).*/
 public class LifeSimulator {
 	public int width, height;
-	public boolean[] createNeighbors, killNeighbors;
+	/**A 9-element array. A cell is born if createNeighbors[the number of its alive neighbors] is true.*/
+	public boolean[] createNeighbors;
+	public boolean[] killNeighbors;
 	public LifeSimulator(int width, int height, boolean[] createNeighbors, boolean[] killNeighbors) {
 		this.width = width;
 		this.height = height;

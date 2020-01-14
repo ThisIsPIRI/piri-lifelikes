@@ -4,15 +4,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**Periodically advances the universe one step at a time.
+ * <br>
+ * Important note:
+ * Arrays {@code grid} and {@code next} are swapped internally after each step to avoid allocating new arrays.
+ * This means your original 'grid' will actually point to the next grid and your 'next' to the current one, every other step.
+ * The Thread will pass the boolean[][] reference to the next grid it just computed to the callback, so you know which one's the most current.
+ * <br>
+ * <img src="doc-files/LifeThread-gridnext.png">*/
 public class LifeThread extends Thread {
 	private final int lifecycle;
-	private final Runnable callback;
+	private final ParameteredRunnable callback;
 	private boolean[][] grid, next;
 	private LifeSimulator sim;
 	public boolean stopped = false; //if true, thread will stop.
+	/**Add a {@link Point} here to set that point's value to true no matter what in the next cycle.*/
 	public final List<Point> overrideList = Collections.synchronizedList(new ArrayList<Point>());
 
-	public LifeThread(LifeSimulator sim, int lifecycle, Runnable callback, boolean[][] grid, boolean[][] next) {
+	/**Constructor.
+	 * @param sim The {@link LifeSimulator} instance to use.
+	 * @param lifecycle How many milliseconds to wait after computing a step.
+	 * @param callback The ParameteredRunnable to call after every step.
+	 *                 Reference to the most recent array will be passed as the argument. See the class description.
+	 * @param grid The initial array.
+	 * @param next Another array of same size as {@code grid}. See the class description for an important note on the naming.*/
+	public LifeThread(LifeSimulator sim, int lifecycle, ParameteredRunnable callback, boolean[][] grid, boolean[][] next) {
 		this.sim = sim;
 		this.lifecycle = lifecycle;
 		this.callback = callback;
@@ -33,12 +49,11 @@ public class LifeThread extends Thread {
 				overrideList.clear();
 			}
 			//Swap arrays to avoid allocation. The old values aren't needed, so we can safely rename it to next to be overwritten
-			//TODO: Sometimes, cells drawn while paused aren't shown, though they do when the simulation starts again.
 			boolean[][] tempArray = grid;
 			grid = next;
 			next = tempArray;
 			//Signal that a cycle has finished
-			callback.run();
+			callback.run(grid);
 			//Handle interrupts
 			long timeToSleep = lifecycle - (System.currentTimeMillis() - timeStarted);
 			try {

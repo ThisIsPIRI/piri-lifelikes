@@ -14,6 +14,7 @@ import android.widget.Button;
 
 import com.thisispiri.lifelike.LifeSimulator;
 import com.thisispiri.lifelike.LifeThread;
+import com.thisispiri.lifelike.ParameteredRunnable;
 import com.thisispiri.lifelike.Point;
 import com.thisispiri.lifelike.R;
 
@@ -22,7 +23,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity { //TODO change terminology to birth-survive from create-kill, add save/load, add eraser
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
@@ -36,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
 	private boolean[] createNeighbors = new boolean[9], killNeighbors = new boolean[9];
 	private LifeSimulator simulator;
 
-	Runnable threadCallback = new Runnable() {
-		@Override public void run() {
-			handler.sendEmptyMessage(0);
+	ParameteredRunnable threadCallback = new ParameteredRunnable() {
+		@Override public void run(Object param) {
+			handler.sendEmptyMessage(MainActivity.this.grid == param ? 0 : 1);
 		}
 	};
 
@@ -46,7 +47,10 @@ public class MainActivity extends AppCompatActivity {
 	private static class UiHandler extends Handler {
 		WeakReference<MainActivity> activity;
 		@Override public void handleMessage(Message msg) {
-			activity.get().lifeGrid.invalidate();
+			if(msg.what == 0)
+				activity.get().lifeGrid.invalidate(activity.get().grid);
+			else
+				activity.get().lifeGrid.invalidate(activity.get().next);
 		}
 		UiHandler(WeakReference<MainActivity> m) {
 			activity = m;

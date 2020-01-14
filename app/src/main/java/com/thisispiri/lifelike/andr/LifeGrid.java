@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
+/**Draws a 2d array of booleans, with each element represented by a square.*/
 public class LifeGrid extends View {
 	private Paint background, cell;
 	private int cellSize, height, width;
@@ -14,6 +15,11 @@ public class LifeGrid extends View {
 		super(context, attrs);
 		background = new Paint();
 		cell = new Paint();
+	}
+	/**Invalidates the View after changing the array to draw to {@code array} argument.*/
+	public void invalidate(boolean[][] array) {
+		this.array = array;
+		super.invalidate();
 	}
 	@Override public void onDraw(Canvas canvas) {
 		canvas.drawRect(0, 0, getWidth(), getHeight(), background);
