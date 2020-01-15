@@ -1,16 +1,19 @@
 package com.thisispiri.lifelike;
 
-/**Simulates a life-like environment. Coordinates begin at upper left (0,0) and end at lower right (height,width).*/
+/**Simulates a life-like environment.
+ * Coordinates begin at upper left (0,0) and end at lower right (height,width).
+ * When birthNumbers[n] is true but surviveNumbers[n] is false, the cell will be flipped(change is favored over stasis).*/
 public class LifeSimulator {
 	public int width, height;
-	/**A 9-element array. A cell is born if createNeighbors[the number of its alive neighbors] is true.*/
-	public boolean[] createNeighbors;
-	public boolean[] killNeighbors;
-	public LifeSimulator(int width, int height, boolean[] createNeighbors, boolean[] killNeighbors) {
+	/**A 9-element array. A cell is born if birthNumbers[the number of its alive neighbors] is true.*/
+	public boolean[] birthNumbers;
+	/**A 9-element array. An alive cell survives if surviveNumbers[the number of its alive neighbors] is true.*/
+	public boolean[] surviveNumbers;
+	public LifeSimulator(int width, int height, boolean[] birthNumbers, boolean[] surviveNumbers) {
 		this.width = width;
 		this.height = height;
-		this.createNeighbors = createNeighbors;
-		this.killNeighbors = killNeighbors;
+		this.birthNumbers = birthNumbers;
+		this.surviveNumbers = surviveNumbers;
 	}
 	/**Simulates one step of life and returns the result in a newly allocated array.
 	 * Slow compared to {@link LifeSimulator#step(boolean[][], boolean[][])}*/
@@ -27,7 +30,7 @@ public class LifeSimulator {
 		for(int h = 0; h < height; h++) {
 			for(int w = 0; w < width; w++) {
 				checkResult = safeCellCheck(w, h, grid);
-				result[h][w] = (createNeighbors[checkResult] && !grid[h][w]) || (!killNeighbors[checkResult] && grid[h][w]);
+				result[h][w] = (birthNumbers[checkResult] && !grid[h][w]) || (surviveNumbers[checkResult] && grid[h][w]);
 			}
 		}
 	}

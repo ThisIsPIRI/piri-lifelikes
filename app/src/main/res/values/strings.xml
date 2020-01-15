@@ -8,12 +8,10 @@
 	<string name="cell_size">Cell size</string>
 	<string name="lifecycle">Lifecycle length(a thousandth second)</string>
 	<string name="neighborBorn">The numbers of neighbors that resurrect a cell</string>
-	<string name="neighborDie">The numbers of neighbors that kill a cell</string>
-	<string name="killingNumber">Killing numbers</string>
-	<string name="creatingNumber">Creating numbers</string>
+	<string name="neighborSurvive">The numbers of neighbors that let a cell survive</string>
+	<string name="surviveNumber">Surviving numbers</string>
+	<string name="birthNumber">Birthing numbers</string>
 	<string name="speedGuide">Inversely proportional to simulation speed</string>
-	<string name="killLoadFail">Failed to load killing numbers</string>
-	<string name="createLoadFail">Failed to load creating numbers</string>
 	<string name="rules">Rules</string>
 	<string name="others">Others</string>
 	<string name="cellColor">Cell color</string>

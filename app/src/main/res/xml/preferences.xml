@@ -4,19 +4,19 @@
 	<PreferenceCategory
 		android:title="@string/rules">
 		<MultiSelectListPreference
-			android:key="neighborCreate"
-			android:title="@string/creatingNumber"
+			android:key="birthNumbers"
+			android:title="@string/birthNumber"
 			android:summary="@string/neighborBorn"
 			android:entries="@array/neighborNumbers"
 			android:entryValues="@array/neighborValue"
-			android:defaultValue="@array/createDefault"/>
+			android:defaultValue="@array/birthDefault"/>
 		<MultiSelectListPreference
-			android:key="neighborKill"
-			android:title="@string/killingNumber"
-			android:summary="@string/neighborDie"
+			android:key="surviveNumbers"
+			android:title="@string/surviveNumber"
+			android:summary="@string/neighborSurvive"
 			android:entries="@array/neighborNumbers"
 			android:entryValues="@array/neighborValue"
-			android:defaultValue="@array/killDefault"/>
+			android:defaultValue="@array/surviveDefault"/>
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="@string/others">

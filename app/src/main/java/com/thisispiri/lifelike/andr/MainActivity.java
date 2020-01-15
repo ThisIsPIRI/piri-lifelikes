@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity { //TODO change terminology to birth-survive from create-kill, add save/load, add eraser
+public class MainActivity extends AppCompatActivity { //TODO add save/load, add eraser
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity { //TODO change terminology 
 	private LifeThread mainThread;
 	private Button start; //start and pause
 	private boolean isPlaying = false;
-	private boolean[] createNeighbors = new boolean[9], killNeighbors = new boolean[9];
+	private boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
 	private LifeSimulator simulator;
 
 	ParameteredRunnable threadCallback = new ParameteredRunnable() {
@@ -65,21 +65,17 @@ public class MainActivity extends AppCompatActivity { //TODO change terminology 
 		lifecycle = pref.getInt("lifecycle", 0);
 		cellColor = pref.getInt("cellColor", 0xFF000000);
 		backgroundColor = pref.getInt("backgroundColor", 0xFFFFFFFF);
-		//retrieve data from MultiSelectListPreferences
-		Set<String> set = pref.getStringSet("neighborCreate", null);
-		Arrays.fill(createNeighbors, false);
-		if(set == null) createNeighbors[3] = true;
-		else for (String s : set) createNeighbors[Integer.valueOf(s)] = true;
-		set = pref.getStringSet("neighborKill", null);
+		//Fill the arrays with false first as we only take true values from the Preferences
+		Arrays.fill(birthNumbers, false);
+		Arrays.fill(surviveNumbers, false);
+		Set<String> set = pref.getStringSet("birthNumbers", null);
+		if(set == null) birthNumbers[3] = true;
+		else for (String s : set) birthNumbers[Integer.valueOf(s)] = true;
+		set = pref.getStringSet("surviveNumbers", null);
 		if(set == null) {
-			Arrays.fill(killNeighbors, true);
-			killNeighbors[2] = killNeighbors[3] = false;
+			surviveNumbers[2] = surviveNumbers[3] = true;
 		}
-		else {
-			Arrays.fill(killNeighbors, false);
-			for (String s : set)
-				killNeighbors[Integer.valueOf(s)] = true;
-		}
+		else for (String s : set) surviveNumbers[Integer.valueOf(s)] = true;
 	}
 	@Override public void onStart() {
 		super.onStart();
@@ -97,7 +93,7 @@ public class MainActivity extends AppCompatActivity { //TODO change terminology 
 					grid[i] = Arrays.copyOf(gridTemp[i], width);
 			}
 		}
-		simulator = new LifeSimulator(width, height, createNeighbors, killNeighbors);
+		simulator = new LifeSimulator(width, height, birthNumbers, surviveNumbers);
 		lifeGrid.setData(grid, cellSize, height, width, cellColor, backgroundColor);
 		lifeGrid.invalidate();
 		//Just so setting and clear buttons don't crash the app when pressed before start
