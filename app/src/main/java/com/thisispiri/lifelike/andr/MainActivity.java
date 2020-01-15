@@ -27,9 +27,11 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
-	private boolean[][] grid;
-	private boolean[][] next;
-	private LifeGrid lifeGrid;
+	/**The most recent grid. Use this for everything--displaying, saving, recovering...*/
+	private boolean[][] currentGrid;
+	/**The empty slate for the next step. The data it holds should be treated as garbage.*/
+	private boolean[][] nextGrid;
+	private LifeView lifeView;
 	private final LifeTouchListener tLis = new LifeTouchListener();
 	private LifeThread mainThread;
 	private Button start, eraserToggle;
@@ -40,7 +42,12 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 
 	private final ParameteredRunnable threadCallback = new ParameteredRunnable() {
 		@Override public void run(Object param) {
-			handler.sendEmptyMessage(MainActivity.this.grid == param ? 0 : 1);
+			if(MainActivity.this.currentGrid != param) {
+				boolean[][] tempGrid = currentGrid;
+				currentGrid = nextGrid;
+				nextGrid = tempGrid;
+			}
+			handler.sendEmptyMessage(0);
 		}
 	};
 
@@ -48,10 +55,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	private static class UiHandler extends Handler {
 		private final WeakReference<MainActivity> activity;
 		@Override public void handleMessage(Message msg) {
-			if(msg.what == 0)
-				activity.get().lifeGrid.invalidate(activity.get().grid);
-			else
-				activity.get().lifeGrid.invalidate(activity.get().next);
+			activity.get().lifeView.invalidate(activity.get().currentGrid);
 		}
 		UiHandler(WeakReference<MainActivity> m) {
 			activity = m;
@@ -78,27 +82,34 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		}
 		else for (String s : set) surviveNumbers[Integer.valueOf(s)] = true;
 	}
+	/**Allocates new boolean[height][width]s for currentGrid and nextGrid.
+	 * @param copyPrevious If true, the values in previous currentGrid will be copied to the new currentGrid.
+	 *                     If the previous grid is smaller, it will be copied to upper left region of the new one.
+	 *                     If it is larger, its upper left region will be copied to the new one.*/
+	private void allocateGrids(boolean copyPrevious) {
+		boolean[][] tempGrid = currentGrid;
+		currentGrid = new boolean[height][width];
+		nextGrid = new boolean[height][width];
+		if(copyPrevious && tempGrid != null) { //Copy over the previous grid if one exists
+			for(int i = 0;i < Math.min(tempGrid.length, height);i++)
+				currentGrid[i] = Arrays.copyOf(tempGrid[i], width);
+		}
+	}
 	@Override public void onStart() {
 		super.onStart();
 		int cellSizeTemp = cellSize;
 		updatePreferences();
 		//If cell size has changed, readjust array size and redraw. Always true after onCreate
 		if(cellSize != cellSizeTemp) {
-			boolean[][] gridTemp = grid;
 			width = screenWidth / cellSize;
 			height = screenHeight / cellSize;
-			grid = new boolean[height][width];
-			next = new boolean[height][width];
-			if(gridTemp != null) { //Copy over the previous grid if one exists
-				for(int i = 0;i < Math.min(gridTemp.length, height);i++)
-					grid[i] = Arrays.copyOf(gridTemp[i], width);
-			}
+			allocateGrids(true);
 		}
 		simulator = new LifeSimulator(width, height, birthNumbers, surviveNumbers);
-		lifeGrid.setData(grid, cellSize, height, width, cellColor, backgroundColor);
-		lifeGrid.invalidate();
+		lifeView.setData(currentGrid, cellSize, height, width, cellColor, backgroundColor);
+		lifeView.invalidate();
 		//Just so setting and clear buttons don't crash the app when pressed before start
-		mainThread = new LifeThread(simulator, lifecycle, threadCallback, grid, next);
+		mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
 	}
 
 	@Override protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +121,8 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		screenWidth = (screenSize.x);
 
 		setContentView(R.layout.activity_main);
-		lifeGrid = findViewById(R.id.view);
-		lifeGrid.setOnTouchListener(tLis);
+		lifeView = findViewById(R.id.view);
+		lifeView.setOnTouchListener(tLis);
 
 		//initialize Button references
 		LifeButtonListener bLis = new LifeButtonListener();
@@ -140,7 +151,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 				}
 				else {
 					isPlaying = true;
-					mainThread = new LifeThread(simulator, lifecycle, threadCallback, grid, next);
+					mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
 					mainThread.start();
 					start.setText(R.string.pause);
 				}
@@ -155,10 +166,8 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 			case R.id.clear:
 				isPlaying = false;
 				mainThread.stopped = true;
-				grid = new boolean[height][width];
-				next = new boolean[height][width];
-				lifeGrid.setData(grid);
-				lifeGrid.invalidate();
+				allocateGrids(false);
+				lifeView.invalidate(currentGrid);
 				start.setText(R.string.start);
 				break;
 			case R.id.eraserToggle:
@@ -213,32 +222,32 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 				}
 				//If paused, resurrect brush size * brush size cells.
 				else {
-					grid[iY][iX] = brushEnabled;
+					currentGrid[iY][iX] = brushEnabled;
 					for (int i = 2; i <= pauseBrushSize; i++) {
 						if (i % 2 == 0) {
 							if (iY + i / 2 < height)
 								for (int j = iX - i / 2 + 1; j <= iX + i / 2; j++) { //(x - i / 2 + 1, y + i / 2) ~ (x + i / 2, y + i / 2) horizontal rightward
-									if (xInBoundary(j)) grid[iY + i / 2][j] = brushEnabled;
+									if (xInBoundary(j)) currentGrid[iY + i / 2][j] = brushEnabled;
 								}
 							if (iX + i / 2 < width)
 								for (int j = iY + i / 2 - 1; j >= iY - i / 2 + 1; j--) { //(x + i / 2, y + i / 2) ~ (x + i / 2, y - i / 2 + 1) vertical upward
-									if (yInBoundary(j)) grid[j][iX + i / 2] = brushEnabled;
+									if (yInBoundary(j)) currentGrid[j][iX + i / 2] = brushEnabled;
 								}
 						}
 						else {
 							if (iY - i / 2 >= 0)
 								for (int j = iX + i / 2; j >= iX - i / 2; j--) { //(x + i / 2, y - i / 2) ~ (x - i / 2, y - i / 2) horizontal leftward
-									if (xInBoundary(j)) grid[iY - i / 2][j] = brushEnabled;
+									if (xInBoundary(j)) currentGrid[iY - i / 2][j] = brushEnabled;
 								}
 							if (iX - i / 2 >= 0)
 								for (int j = iY - i / 2 + 1; j <= iY + i / 2; j++) { //(x - i / 2, y - i / 2) ~ (x - i / 2, y + i / 2) vertical downward
-									if (yInBoundary(j)) grid[j][iX - i / 2] = brushEnabled;
+									if (yInBoundary(j)) currentGrid[j][iX - i / 2] = brushEnabled;
 								}
 						}
 					}
 				}
 			}
-			lifeGrid.invalidate();
+			lifeView.invalidate();
 			return true;
 		}
 	}

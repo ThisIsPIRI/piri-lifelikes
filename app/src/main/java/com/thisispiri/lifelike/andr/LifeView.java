@@ -7,11 +7,11 @@ import android.util.AttributeSet;
 import android.view.View;
 
 /**Draws a 2d array of booleans, with each element represented by a square.*/
-public class LifeGrid extends View {
+public class LifeView extends View {
 	private final Paint background, cell;
 	private int cellSize, height, width;
 	private boolean[][] array;
-	public LifeGrid(Context context, AttributeSet attrs) {
+	public LifeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		background = new Paint();
 		cell = new Paint();
@@ -45,9 +45,5 @@ public class LifeGrid extends View {
 		this.width = width;
 		cell.setColor(cellColor);
 		background.setColor(backgroundColor);
-	}
-	/**Changes the grid to draw. Also see {@link LifeGrid#invalidate(boolean[][])}.*/
-	public void setData(boolean[][] array) {
-		this.array = array;
 	}
 }
