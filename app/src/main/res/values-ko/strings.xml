@@ -17,4 +17,8 @@
 	<string name="backgroundColor">바탕 빛깔</string>
 	<string name="cellColor">칸 빛깔</string>
 	<string name="credits">크레딧</string>
+	<string name="save">적어놓기</string>
+	<string name="load">불러오기</string>
+	<string name="eraserToggleWriting">붓</string>
+	<string name="eraserToggleErasing">지우개</string>
 </resources>

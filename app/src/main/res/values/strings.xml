@@ -17,4 +17,8 @@
 	<string name="cellColor">Cell color</string>
 	<string name="backgroundColor">Background color</string>
 	<string name="credits">Credits</string>
+	<string name="save">Save</string>
+	<string name="load">Load</string>
+	<string name="eraserToggleWriting">Brush</string>
+	<string name="eraserToggleErasing">Eraser</string>
 </resources>

@@ -23,21 +23,22 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity { //TODO add save/load, add eraser
+public class MainActivity extends AppCompatActivity { //TODO add save/load, add eraser, add action_view
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
 	private boolean[][] grid;
 	private boolean[][] next;
 	private LifeGrid lifeGrid;
-	private LifeTouchListener tLis = new LifeTouchListener();
+	private final LifeTouchListener tLis = new LifeTouchListener();
 	private LifeThread mainThread;
-	private Button start; //start and pause
+	private Button start, eraserToggle;
 	private boolean isPlaying = false;
-	private boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
+	private boolean brushEnabled = true;
+	private final boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
 	private LifeSimulator simulator;
 
-	ParameteredRunnable threadCallback = new ParameteredRunnable() {
+	private final ParameteredRunnable threadCallback = new ParameteredRunnable() {
 		@Override public void run(Object param) {
 			handler.sendEmptyMessage(MainActivity.this.grid == param ? 0 : 1);
 		}
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 
 	//screen update
 	private static class UiHandler extends Handler {
-		WeakReference<MainActivity> activity;
+		private final WeakReference<MainActivity> activity;
 		@Override public void handleMessage(Message msg) {
 			if(msg.what == 0)
 				activity.get().lifeGrid.invalidate(activity.get().grid);
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 			activity = m;
 		}
 	}
-	Handler handler = new UiHandler(new WeakReference<>(this));
+	private final Handler handler = new UiHandler(new WeakReference<>(this));
 
 	private void updatePreferences() {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		//save screen resolution
 		android.graphics.Point screenSize = new android.graphics.Point();
 		getWindowManager().getDefaultDisplay().getSize(screenSize);
-		screenHeight = (int) (screenSize.y * 0.9);
+		screenHeight = (int) (screenSize.y * 0.9); //Subtract height of the button bar
 		screenWidth = (screenSize.x);
 
 		setContentView(R.layout.activity_main);
@@ -118,6 +119,8 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		start.setOnClickListener(bLis);
 		findViewById(R.id.setting).setOnClickListener(bLis);
 		findViewById(R.id.clear).setOnClickListener(bLis);
+		eraserToggle = findViewById(R.id.eraserToggle);
+		eraserToggle.setOnClickListener(bLis);
 	}
 	@Override public void onBackPressed() {
 		isPlaying = false;
@@ -158,12 +161,22 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 				lifeGrid.invalidate();
 				start.setText(R.string.start);
 				break;
+			case R.id.eraserToggle:
+				if(brushEnabled) {
+					brushEnabled = false;
+					eraserToggle.setText(R.string.eraserToggleErasing);
+				}
+				else {
+					brushEnabled = true;
+					eraserToggle.setText(R.string.eraserToggleWriting);
+				}
+				break;
 			}
 		}
 	}
 
-	boolean xInBoundary(int x) { return x < width && x >= 0; }
-	boolean yInBoundary(int y) { return y < height && y >= 0; }
+	private boolean xInBoundary(int x) { return x < width && x >= 0; }
+	private boolean yInBoundary(int y) { return y < height && y >= 0; }
 	//handle touch events
 	private class LifeTouchListener implements View.OnTouchListener {
 		private final Random r = new Random();
@@ -172,7 +185,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		public boolean onTouch(View v, MotionEvent m) {
 			int x = Math.round(m.getX()), y = Math.round(m.getY());
 			final int iX = x * width / screenWidth, iY = y * height / screenHeight;
-
+			//TODO: Move this to somewhere else
 			if ((iY >= 0) && (iX >= 0) && (iY < (height - 1)) && (iX < (width - 1))) {
 				//If not paused, randomly resurrect cells near touch location according to brush size.
 				if (isPlaying) {
@@ -200,26 +213,26 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 				}
 				//If paused, resurrect brush size * brush size cells.
 				else {
-					grid[iY][iX] = true;
+					grid[iY][iX] = brushEnabled;
 					for (int i = 2; i <= pauseBrushSize; i++) {
 						if (i % 2 == 0) {
 							if (iY + i / 2 < height)
 								for (int j = iX - i / 2 + 1; j <= iX + i / 2; j++) { //(x - i / 2 + 1, y + i / 2) ~ (x + i / 2, y + i / 2) horizontal rightward
-									if (xInBoundary(j)) grid[iY + i / 2][j] = true;
+									if (xInBoundary(j)) grid[iY + i / 2][j] = brushEnabled;
 								}
 							if (iX + i / 2 < width)
 								for (int j = iY + i / 2 - 1; j >= iY - i / 2 + 1; j--) { //(x + i / 2, y + i / 2) ~ (x + i / 2, y - i / 2 + 1) vertical upward
-									if (yInBoundary(j)) grid[j][iX + i / 2] = true;
+									if (yInBoundary(j)) grid[j][iX + i / 2] = brushEnabled;
 								}
 						}
 						else {
 							if (iY - i / 2 >= 0)
 								for (int j = iX + i / 2; j >= iX - i / 2; j--) { //(x + i / 2, y - i / 2) ~ (x - i / 2, y - i / 2) horizontal leftward
-									if (xInBoundary(j)) grid[iY - i / 2][j] = true;
+									if (xInBoundary(j)) grid[iY - i / 2][j] = brushEnabled;
 								}
 							if (iX - i / 2 >= 0)
 								for (int j = iY - i / 2 + 1; j <= iY + i / 2; j++) { //(x - i / 2, y - i / 2) ~ (x - i / 2, y + i / 2) vertical downward
-									if (yInBoundary(j)) grid[j][iX - i / 2] = true;
+									if (yInBoundary(j)) grid[j][iX - i / 2] = brushEnabled;
 								}
 						}
 					}

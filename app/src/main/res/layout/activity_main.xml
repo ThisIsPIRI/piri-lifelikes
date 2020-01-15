@@ -31,10 +31,34 @@
 			android:layout_width="0dp"
 			android:layout_height="match_parent"/>
 	</LinearLayout>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		tools:ignore="ButtonStyle">
+		<Button
+			android:id="@+id/save"
+			android:text="@string/save"
+			android:layout_weight="1"
+			android:layout_width="0dp"
+			android:layout_height="match_parent"/>
+		<Button
+			android:id="@+id/load"
+			android:text="@string/load"
+			android:layout_weight="1"
+			android:layout_width="0dp"
+			android:layout_height="match_parent"/>
+		<Button
+			android:id="@+id/eraserToggle"
+			android:text="@string/eraserToggleWriting"
+			android:layout_weight="1"
+			android:layout_width="0dp"
+			android:layout_height="match_parent"/>
+	</LinearLayout>
 
 	<com.thisispiri.lifelike.andr.LifeGrid
 		android:layout_height="0dp"
 		android:layout_width="match_parent"
 		android:id="@+id/view"
-		android:layout_weight="9" />
+		android:layout_weight="18" />
 </LinearLayout>

@@ -8,7 +8,7 @@ import android.view.View;
 
 /**Draws a 2d array of booleans, with each element represented by a square.*/
 public class LifeGrid extends View {
-	private Paint background, cell;
+	private final Paint background, cell;
 	private int cellSize, height, width;
 	private boolean[][] array;
 	public LifeGrid(Context context, AttributeSet attrs) {
@@ -31,7 +31,14 @@ public class LifeGrid extends View {
 			}
 		}
 	}
-	public void setData(boolean[][] array, int cellSize, int height, int width, int cellColor, int backgroundColor) { //set drawing data.
+	/**Call this once to ensure cells are drawn.
+	 * @param array The grid to draw.
+	 * @param cellSize The length of individual cell squares.
+	 * @param height The height of the grid in cells.
+	 * @param width The width of the grid in cells.
+	 * @param cellColor The color of cells in ARGB.
+	 * @param backgroundColor The background color in ARGB.*/
+	public void setData(boolean[][] array, int cellSize, int height, int width, int cellColor, int backgroundColor) {
 		this.array = array;
 		this.cellSize = cellSize;
 		this.height = height;
@@ -39,6 +46,7 @@ public class LifeGrid extends View {
 		cell.setColor(cellColor);
 		background.setColor(backgroundColor);
 	}
+	/**Changes the grid to draw. Also see {@link LifeGrid#invalidate(boolean[][])}.*/
 	public void setData(boolean[][] array) {
 		this.array = array;
 	}

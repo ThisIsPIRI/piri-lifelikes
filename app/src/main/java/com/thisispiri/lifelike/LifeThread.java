@@ -16,7 +16,7 @@ public class LifeThread extends Thread {
 	private final int lifecycle;
 	private final ParameteredRunnable callback;
 	private boolean[][] grid, next;
-	private LifeSimulator sim;
+	private final LifeSimulator sim;
 	public boolean stopped = false; //if true, thread will stop.
 	/**Add a {@link Point} here to set that point's value to true no matter what in the next cycle.*/
 	public final List<Point> overrideList = Collections.synchronizedList(new ArrayList<Point>());
