@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
-import com.thisispiri.lifelike.LifeSimulator;
+import com.thisispiri.lifelike.LifeUniverse;
 import com.thisispiri.lifelike.LifeThread;
 import com.thisispiri.lifelike.ParameteredRunnable;
 import com.thisispiri.lifelike.R;
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	private boolean isPlaying = false;
 	private boolean brushEnabled = true;
 	private final boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
-	private LifeSimulator simulator;
+	private LifeUniverse simulator;
 
 	private final ParameteredRunnable threadCallback = new ParameteredRunnable() {
 		@Override public void run(Object param) {
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 			height = screenHeight / cellSize;
 			allocateGrids(true);
 		}
-		simulator = new LifeSimulator(width, height, birthNumbers, surviveNumbers);
+		simulator = new LifeUniverse(currentGrid, birthNumbers, surviveNumbers);
 		lifeView.setData(currentGrid, cellSize, height, width, cellColor, backgroundColor);
 		lifeView.invalidate();
 		//Just so setting and clear buttons don't crash the app when pressed before start
@@ -116,6 +116,8 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		findViewById(R.id.clear).setOnClickListener(bLis);
 		eraserToggle = findViewById(R.id.eraserToggle);
 		eraserToggle.setOnClickListener(bLis);
+		findViewById(R.id.save).setOnClickListener(bLis);
+		findViewById(R.id.load).setOnClickListener(bLis);
 	}
 	@Override public void onBackPressed() {
 		pause(true);
@@ -142,6 +144,12 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 			case R.id.eraserToggle:
 				brushEnabled = !brushEnabled;
 				eraserToggle.setText(brushEnabled ? R.string.eraserToggleWriting : R.string.eraserToggleErasing);
+				break;
+			case R.id.save:
+				android.util.Log.d("PIRIMNK", "save pressed");
+				break;
+			case R.id.load:
+				android.util.Log.d("PIRILL", "load pressed");
 				break;
 			}
 		}

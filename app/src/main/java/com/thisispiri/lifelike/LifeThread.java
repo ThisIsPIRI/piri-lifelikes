@@ -18,19 +18,19 @@ public class LifeThread extends Thread {
 	private final int lifecycle;
 	private final ParameteredRunnable callback;
 	private boolean[][] grid, next;
-	private final LifeSimulator sim;
+	private final LifeUniverse sim;
 	public boolean stopped = false; //if true, thread will stop.
 	/**Add a {@code Point} here to set that point's value to true no matter what in the next cycle.*/
 	public final List<Point> overrideList = Collections.synchronizedList(new ArrayList<Point>());
 
 	/**Constructor.
-	 * @param sim The {@link LifeSimulator} instance to use.
+	 * @param sim The {@link LifeUniverse} instance to use.
 	 * @param lifecycle How many milliseconds to wait after computing a step.
 	 * @param callback The ParameteredRunnable to call after every step.
 	 *                 Reference to the most recent array will be passed as the argument. See the class description.
 	 * @param grid The initial array.
 	 * @param next Another array of same size as {@code grid}. See the class description for an important note on the naming.*/
-	public LifeThread(LifeSimulator sim, int lifecycle, ParameteredRunnable callback, boolean[][] grid, boolean[][] next) {
+	public LifeThread(LifeUniverse sim, int lifecycle, ParameteredRunnable callback, boolean[][] grid, boolean[][] next) {
 		this.sim = sim;
 		this.lifecycle = lifecycle;
 		this.callback = callback;

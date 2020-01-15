@@ -5,25 +5,25 @@ import com.thisispiri.common.Point;
 import java.util.List;
 import java.util.Random;
 
-/**Simulates a life-like environment.
+/**Simulates a rectangular life-like universe.
  * Coordinates begin at upper left (0,0) and end at lower right (height,width).
  * When birthNumbers[n] is true but surviveNumbers[n] is false, the cell will be flipped(change is favored over stasis).*/
-public class LifeSimulator {
-	public int width, height;
+public class LifeUniverse {
+	public boolean[][] grid;
 	/**A 9-element array. A cell is born if birthNumbers[the number of its alive neighbors] is true.*/
 	public boolean[] birthNumbers;
 	/**A 9-element array. An alive cell survives if surviveNumbers[the number of its alive neighbors] is true.*/
 	public boolean[] surviveNumbers;
-	public LifeSimulator(int width, int height, boolean[] birthNumbers, boolean[] surviveNumbers) {
-		this.width = width;
-		this.height = height;
+	public LifeUniverse(boolean[][] grid, boolean[] birthNumbers, boolean[] surviveNumbers) {
+		this.grid = grid;
 		this.birthNumbers = birthNumbers;
 		this.surviveNumbers = surviveNumbers;
 	}
 	/**Simulates one step of life and returns the result in a newly allocated array.
-	 * Slow compared to {@link LifeSimulator#step(boolean[][], boolean[][])}*/
+	 * Slow compared to {@link LifeUniverse#step(boolean[][], boolean[][])}*/
 	public boolean[][] step(boolean[][] grid) {
-		boolean[][] result = new boolean[height][width];
+		this.grid = grid; //TODO DRY grid field update
+		boolean[][] result = new boolean[grid.length][grid[0].length];
 		step(grid, result);
 		return result;
 	}
@@ -31,9 +31,10 @@ public class LifeSimulator {
 	 * @param grid The current state of lives. Must be rectangular(i.e. all rows must have same length).
 	 * @param result The array to write results to. Must be different from {@code grid}.*/
 	public void step(boolean[][] grid, boolean[][] result) {
+		this.grid = grid;
 		int checkResult;
-		for(int h = 0; h < height; h++) {
-			for(int w = 0; w < width; w++) {
+		for(int h = 0; h < grid.length; h++) {
+			for(int w = 0; w < grid[0].length; w++) {
 				checkResult = safeCellCheck(w, h, grid);
 				result[h][w] = (birthNumbers[checkResult] && !grid[h][w]) || (surviveNumbers[checkResult] && grid[h][w]);
 			}
@@ -46,19 +47,19 @@ public class LifeSimulator {
 			if(x > 0)
 				if(grid[y - 1][x - 1]) sum++;
 			if(grid[y - 1][x]) sum++;
-			if(x < width - 1)
+			if(x < grid[0].length - 1)
 				if (grid[y - 1][x + 1]) sum++;
 		}
-		if(y < height - 1) {
+		if(y < grid.length - 1) {
 			if(x > 0)
 				if(grid[y+1][x-1]) sum++;
 			if(grid[y+1][x]) sum++;
-			if(x < width - 1)
+			if(x < grid[0].length - 1)
 				if(grid[y+1][x+1]) sum++;
 		}
 		if(x > 0)
 			if(grid[y][x-1]) sum++;
-		if(x < width - 1)
+		if(x < grid[0].length - 1)
 			if(grid[y][x+1]) sum++;
 
 		return sum;
@@ -70,15 +71,16 @@ public class LifeSimulator {
 	 * @param size The length of the square.
 	 * @param revive If true, cells inside the area are revived. If false, they are killed.*/
 	public void paintSquare(boolean[][] grid, int x, int y, int size, boolean revive) {
+		this.grid = grid;
 		grid[y][x] = revive;
 		for (int i = 2; i <= size; i++) {
 			if (i % 2 == 0) {
-				if (y + i / 2 < height)
+				if (y + i / 2 < grid.length)
 					//(x - i / 2 + 1, y + i / 2) ~ (x + i / 2, y + i / 2) horizontal rightward
 					for (int j = x - i / 2 + 1; j <= x + i / 2; j++) {
 						if (xInBoundary(j)) grid[y + i / 2][j] = revive;
 					}
-				if (x + i / 2 < width)
+				if (x + i / 2 < grid[0].length)
 					//(x + i / 2, y + i / 2) ~ (x + i / 2, y - i / 2 + 1) vertical upward
 					for (int j = y + i / 2 - 1; j >= y - i / 2 + 1; j--) {
 						if (yInBoundary(j)) grid[j][x + i / 2] = revive;
@@ -109,7 +111,7 @@ public class LifeSimulator {
 			if(inBoundary(cX, cY)) list.add(new Point(cX, cY));
 		}
 	}
-	private boolean xInBoundary(int x) {return x < width && x >= 0;}
-	private boolean yInBoundary(int y) {return y < height && y >= 0;}
+	private boolean xInBoundary(int x) {return x < grid[0].length && x >= 0;}
+	private boolean yInBoundary(int y) {return y < grid.length && y >= 0;}
 	private boolean inBoundary(int x, int y) {return xInBoundary(x) && yInBoundary(y);}
 }

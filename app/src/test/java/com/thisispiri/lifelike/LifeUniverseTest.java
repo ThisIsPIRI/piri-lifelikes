@@ -6,12 +6,12 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class LifeSimulatorTest {
+public class LifeUniverseTest {
 	@Test public void testConway0() {
 		boolean[] conway_birth = {false, false, false, true, false, false, false, false, false};
 		boolean[] conway_survive = {false, false, true, true, false, false, false, false, false};
 		boolean[][] grid = {{true, false}, {false, false}};
-		LifeSimulator sim = new LifeSimulator(2, 2, conway_birth, conway_survive);
+		LifeUniverse sim = new LifeUniverse(grid, conway_birth, conway_survive);
 		//Killing cells
 		grid = sim.step(grid);
 		assertTrue(Arrays.deepEquals(grid, new boolean[][]{{false, false}, {false, false}}));
