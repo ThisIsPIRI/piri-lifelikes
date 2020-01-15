@@ -15,7 +15,6 @@ import android.widget.Button;
 import com.thisispiri.lifelike.LifeSimulator;
 import com.thisispiri.lifelike.LifeThread;
 import com.thisispiri.lifelike.ParameteredRunnable;
-import com.thisispiri.lifelike.Point;
 import com.thisispiri.lifelike.R;
 
 import java.lang.ref.WeakReference;
@@ -23,7 +22,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity { //TODO add save/load, add eraser, add action_view
+public class MainActivity extends AppCompatActivity { //TODO add save/load, add action_view
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
@@ -63,6 +62,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	}
 	private final Handler handler = new UiHandler(new WeakReference<>(this));
 
+	//SECTION: Android callbacks
 	private void updatePreferences() {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		cellSize = pref.getInt("cellSize", 16);
@@ -82,19 +82,6 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		}
 		else for (String s : set) surviveNumbers[Integer.valueOf(s)] = true;
 	}
-	/**Allocates new boolean[height][width]s for currentGrid and nextGrid.
-	 * @param copyPrevious If true, the values in previous currentGrid will be copied to the new currentGrid.
-	 *                     If the previous grid is smaller, it will be copied to upper left region of the new one.
-	 *                     If it is larger, its upper left region will be copied to the new one.*/
-	private void allocateGrids(boolean copyPrevious) {
-		boolean[][] tempGrid = currentGrid;
-		currentGrid = new boolean[height][width];
-		nextGrid = new boolean[height][width];
-		if(copyPrevious && tempGrid != null) { //Copy over the previous grid if one exists
-			for(int i = 0;i < Math.min(tempGrid.length, height);i++)
-				currentGrid[i] = Arrays.copyOf(tempGrid[i], width);
-		}
-	}
 	@Override public void onStart() {
 		super.onStart();
 		int cellSizeTemp = cellSize;
@@ -111,20 +98,17 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		//Just so setting and clear buttons don't crash the app when pressed before start
 		mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
 	}
-
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//save screen resolution
+		//Save screen resolution
 		android.graphics.Point screenSize = new android.graphics.Point();
 		getWindowManager().getDefaultDisplay().getSize(screenSize);
 		screenHeight = (int) (screenSize.y * 0.9); //Subtract height of the button bar
 		screenWidth = (screenSize.x);
-
+		//Get Views from the layout and attach listeners
 		setContentView(R.layout.activity_main);
 		lifeView = findViewById(R.id.view);
 		lifeView.setOnTouchListener(tLis);
-
-		//initialize Button references
 		LifeButtonListener bLis = new LifeButtonListener();
 		start = findViewById(R.id.start);
 		start.setOnClickListener(bLis);
@@ -134,121 +118,78 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		eraserToggle.setOnClickListener(bLis);
 	}
 	@Override public void onBackPressed() {
-		isPlaying = false;
-		mainThread.stopped = true;
+		pause(true);
 		super.onBackPressed();
 	}
-
+	//SECTION: Listeners
 	//handle button click events
 	private class LifeButtonListener implements View.OnClickListener {
 		@Override public void onClick(View v) {
 			switch(v.getId()) {
 			case R.id.start:
-				if(isPlaying) {
-					isPlaying = false;
-					mainThread.stopped = true;
-					start.setText(R.string.start);
-				}
-				else {
-					isPlaying = true;
-					mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
-					mainThread.start();
-					start.setText(R.string.pause);
-				}
+				pause(isPlaying);
 				break;
 			case R.id.setting:
-				isPlaying = false;
-				mainThread.stopped = true;
-				start.setText(R.string.start);
+				pause(true);
 				Intent toSetting = new Intent(MainActivity.this, SettingActivity.class);
 				MainActivity.this.startActivityForResult(toSetting, 0);
 				break;
 			case R.id.clear:
-				isPlaying = false;
-				mainThread.stopped = true;
+				pause(true);
 				allocateGrids(false);
 				lifeView.invalidate(currentGrid);
-				start.setText(R.string.start);
 				break;
 			case R.id.eraserToggle:
-				if(brushEnabled) {
-					brushEnabled = false;
-					eraserToggle.setText(R.string.eraserToggleErasing);
-				}
-				else {
-					brushEnabled = true;
-					eraserToggle.setText(R.string.eraserToggleWriting);
-				}
+				brushEnabled = !brushEnabled;
+				eraserToggle.setText(brushEnabled ? R.string.eraserToggleWriting : R.string.eraserToggleErasing);
 				break;
 			}
 		}
 	}
-
-	private boolean xInBoundary(int x) { return x < width && x >= 0; }
-	private boolean yInBoundary(int y) { return y < height && y >= 0; }
-	//handle touch events
 	private class LifeTouchListener implements View.OnTouchListener {
-		private final Random r = new Random();
-
-		@Override
-		public boolean onTouch(View v, MotionEvent m) {
-			int x = Math.round(m.getX()), y = Math.round(m.getY());
+		private final Random random = new Random();
+		@Override public boolean onTouch(View v, MotionEvent m) {
+			final int x = Math.round(m.getX()), y = Math.round(m.getY());
 			final int iX = x * width / screenWidth, iY = y * height / screenHeight;
-			//TODO: Move this to somewhere else
 			if ((iY >= 0) && (iX >= 0) && (iY < (height - 1)) && (iX < (width - 1))) {
 				//If not paused, randomly resurrect cells near touch location according to brush size.
-				if (isPlaying) {
-					int rasY, rasX;
-					mainThread.overrideList.add(new Point(iX, iY));
-					rasY = r.nextInt(4);
-					rasX = r.nextInt(4);
-					if (iY + rasY > 0 && iY + rasY < height - 1 && iX + rasX > 0 && iX + rasX < width - 1)
-						mainThread.overrideList.add(new Point(iX + rasX, iY + rasY));
-
-					rasY = r.nextInt(4);
-					rasX = r.nextInt(4);
-					if (iY - rasY > 0 && iY - rasY < height - 1 && iX - rasX > 0 && iX - rasX < width - 1)
-						mainThread.overrideList.add(new Point(iX - rasX, iY - rasY));
-
-					rasY = r.nextInt(4);
-					rasX = r.nextInt(4);
-					if (iY + rasY > 0 && iY + rasY < height - 1 && iX - rasX > 0 && iX - rasX < width - 1)
-						mainThread.overrideList.add(new Point(iX - rasX, iY + rasY));
-
-					rasY = r.nextInt(4);
-					rasX = r.nextInt(4);
-					if (iY - rasY > 0 && iY - rasY < height - 1 && iX + rasX > 0 && iX + rasX < width - 1)
-						mainThread.overrideList.add(new Point(iX + rasX, iY - rasY));
-				}
+				if (isPlaying) simulator.paintRandom(mainThread.overrideList, iX, iY, random);
 				//If paused, resurrect brush size * brush size cells.
-				else {
-					currentGrid[iY][iX] = brushEnabled;
-					for (int i = 2; i <= pauseBrushSize; i++) {
-						if (i % 2 == 0) {
-							if (iY + i / 2 < height)
-								for (int j = iX - i / 2 + 1; j <= iX + i / 2; j++) { //(x - i / 2 + 1, y + i / 2) ~ (x + i / 2, y + i / 2) horizontal rightward
-									if (xInBoundary(j)) currentGrid[iY + i / 2][j] = brushEnabled;
-								}
-							if (iX + i / 2 < width)
-								for (int j = iY + i / 2 - 1; j >= iY - i / 2 + 1; j--) { //(x + i / 2, y + i / 2) ~ (x + i / 2, y - i / 2 + 1) vertical upward
-									if (yInBoundary(j)) currentGrid[j][iX + i / 2] = brushEnabled;
-								}
-						}
-						else {
-							if (iY - i / 2 >= 0)
-								for (int j = iX + i / 2; j >= iX - i / 2; j--) { //(x + i / 2, y - i / 2) ~ (x - i / 2, y - i / 2) horizontal leftward
-									if (xInBoundary(j)) currentGrid[iY - i / 2][j] = brushEnabled;
-								}
-							if (iX - i / 2 >= 0)
-								for (int j = iY - i / 2 + 1; j <= iY + i / 2; j++) { //(x - i / 2, y - i / 2) ~ (x - i / 2, y + i / 2) vertical downward
-									if (yInBoundary(j)) currentGrid[j][iX - i / 2] = brushEnabled;
-								}
-						}
-					}
-				}
+				else simulator.paintSquare(currentGrid, iX, iY, pauseBrushSize, brushEnabled);
 			}
 			lifeView.invalidate();
 			return true;
+		}
+	}
+	//SECTION: Other logic
+	/**Starts or pauses the game so you don't have to change the start button's text or deal with mainThread all over the place.
+	 * @param pause If true, pauses the game. If false, starts the game.*/
+	private void pause(boolean pause) {
+		if(pause != isPlaying) //Do nothing if we're already in the desired state
+			return;
+		if(pause) {
+			isPlaying = false;
+			mainThread.stopped = true;
+			start.setText(R.string.start);
+		}
+		else {
+			isPlaying = true;
+			mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
+			mainThread.start();
+			start.setText(R.string.pause);
+		}
+	}
+	/**Allocates new boolean[height][width]s for currentGrid and nextGrid.
+	 * @param copyPrevious If true, the values in previous currentGrid will be copied to the new currentGrid.
+	 *                     If the previous grid is smaller, it will be copied to upper left region of the new one.
+	 *                     If it is larger, its upper left region will be copied to the new one.*/
+	private void allocateGrids(boolean copyPrevious) {
+		boolean[][] tempGrid = currentGrid;
+		currentGrid = new boolean[height][width];
+		nextGrid = new boolean[height][width];
+		if(copyPrevious && tempGrid != null) { //Copy over the previous grid if one exists
+			for(int i = 0;i < Math.min(tempGrid.length, height);i++)
+				currentGrid[i] = Arrays.copyOf(tempGrid[i], width);
 		}
 	}
 }
