@@ -1,5 +1,7 @@
 package com.thisispiri.lifelike;
 
+import com.thisispiri.common.Point;
+
 import java.util.List;
 import java.util.Random;
 

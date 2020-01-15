@@ -1,5 +1,7 @@
 package com.thisispiri.lifelike;
 
+import com.thisispiri.common.Point;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +20,7 @@ public class LifeThread extends Thread {
 	private boolean[][] grid, next;
 	private final LifeSimulator sim;
 	public boolean stopped = false; //if true, thread will stop.
-	/**Add a {@link Point} here to set that point's value to true no matter what in the next cycle.*/
+	/**Add a {@code Point} here to set that point's value to true no matter what in the next cycle.*/
 	public final List<Point> overrideList = Collections.synchronizedList(new ArrayList<Point>());
 
 	/**Constructor.
