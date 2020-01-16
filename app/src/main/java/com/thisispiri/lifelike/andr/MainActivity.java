@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	private LifeUniverse simulator;
 
 	private final ParameteredRunnable threadCallback = new ParameteredRunnable() {
-		@Override public void run(Object param) {
+		@Override public void run(final Object param) {
 			if(MainActivity.this.currentGrid != param) {
 				boolean[][] tempGrid = currentGrid;
 				currentGrid = nextGrid;
@@ -53,10 +53,10 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	//screen update
 	private static class UiHandler extends Handler {
 		private final WeakReference<MainActivity> activity;
-		@Override public void handleMessage(Message msg) {
+		@Override public void handleMessage(final Message msg) {
 			activity.get().lifeView.invalidate(activity.get().currentGrid);
 		}
-		UiHandler(WeakReference<MainActivity> m) {
+		UiHandler(final WeakReference<MainActivity> m) {
 			activity = m;
 		}
 	}
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 
 	//SECTION: Android callbacks
 	private void updatePreferences() {
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		cellSize = pref.getInt("cellSize", 16);
 		pauseBrushSize = pref.getInt("pauseBrushSize", 1);
 		lifecycle = pref.getInt("lifecycle", 0);
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	}
 	@Override public void onStart() {
 		super.onStart();
-		int cellSizeTemp = cellSize;
+		final int cellSizeTemp = cellSize;
 		updatePreferences();
 		//If cell size has changed, readjust array size and redraw. Always true after onCreate
 		if(cellSize != cellSizeTemp) {
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		//Just so setting and clear buttons don't crash the app when pressed before start
 		mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
 	}
-	@Override protected void onCreate(Bundle savedInstanceState) {
+	@Override protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//Save screen resolution
 		android.graphics.Point screenSize = new android.graphics.Point();
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 		setContentView(R.layout.activity_main);
 		lifeView = findViewById(R.id.view);
 		lifeView.setOnTouchListener(tLis);
-		LifeButtonListener bLis = new LifeButtonListener();
+		final LifeButtonListener bLis = new LifeButtonListener();
 		start = findViewById(R.id.start);
 		start.setOnClickListener(bLis);
 		findViewById(R.id.setting).setOnClickListener(bLis);
@@ -126,14 +126,14 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	//SECTION: Listeners
 	//handle button click events
 	private class LifeButtonListener implements View.OnClickListener {
-		@Override public void onClick(View v) {
+		@Override public void onClick(final View v) {
 			switch(v.getId()) {
 			case R.id.start:
 				pause(isPlaying);
 				break;
 			case R.id.setting:
 				pause(true);
-				Intent toSetting = new Intent(MainActivity.this, SettingActivity.class);
+				final Intent toSetting = new Intent(MainActivity.this, SettingActivity.class);
 				MainActivity.this.startActivityForResult(toSetting, 0);
 				break;
 			case R.id.clear:
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	}
 	private class LifeTouchListener implements View.OnTouchListener {
 		private final Random random = new Random();
-		@Override public boolean onTouch(View v, MotionEvent m) {
+		@Override public boolean onTouch(final View v, final MotionEvent m) {
 			final int x = Math.round(m.getX()), y = Math.round(m.getY());
 			final int iX = x * width / screenWidth, iY = y * height / screenHeight;
 			if ((iY >= 0) && (iX >= 0) && (iY < (height - 1)) && (iX < (width - 1))) {
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	//SECTION: Other logic
 	/**Starts or pauses the game so you don't have to change the start button's text or deal with mainThread all over the place.
 	 * @param pause If true, pauses the game. If false, starts the game.*/
-	private void pause(boolean pause) {
+	private void pause(final boolean pause) {
 		if(pause != isPlaying) //Do nothing if we're already in the desired state
 			return;
 		if(pause) {
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	 * @param copyPrevious If true, the values in previous currentGrid will be copied to the new currentGrid.
 	 *                     If the previous grid is smaller, it will be copied to upper left region of the new one.
 	 *                     If it is larger, its upper left region will be copied to the new one.*/
-	private void allocateGrids(boolean copyPrevious) {
+	private void allocateGrids(final boolean copyPrevious) {
 		boolean[][] tempGrid = currentGrid;
 		currentGrid = new boolean[height][width];
 		nextGrid = new boolean[height][width];

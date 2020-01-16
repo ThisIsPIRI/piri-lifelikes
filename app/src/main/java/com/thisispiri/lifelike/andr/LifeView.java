@@ -11,17 +11,17 @@ public class LifeView extends View {
 	private final Paint background, cell;
 	private int cellSize, height, width;
 	private boolean[][] array;
-	public LifeView(Context context, AttributeSet attrs) {
+	public LifeView(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 		background = new Paint();
 		cell = new Paint();
 	}
 	/**Invalidates the View after changing the array to draw to {@code array} argument.*/
-	public void invalidate(boolean[][] array) {
+	public void invalidate(final boolean[][] array) {
 		this.array = array;
 		super.invalidate();
 	}
-	@Override public void onDraw(Canvas canvas) {
+	@Override public void onDraw(final Canvas canvas) {
 		canvas.drawRect(0, 0, getWidth(), getHeight(), background);
 		for(int h = 0;h < height;h++) {
 			for(int w = 0;w < width;w++) {
@@ -38,7 +38,8 @@ public class LifeView extends View {
 	 * @param width The width of the grid in cells.
 	 * @param cellColor The color of cells in ARGB.
 	 * @param backgroundColor The background color in ARGB.*/
-	public void setData(boolean[][] array, int cellSize, int height, int width, int cellColor, int backgroundColor) {
+	public void setData(final boolean[][] array, final int cellSize, final int height, final int width,
+						final int cellColor, final int backgroundColor) {
 		this.array = array;
 		this.cellSize = cellSize;
 		this.height = height;

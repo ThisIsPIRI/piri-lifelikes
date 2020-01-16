@@ -30,7 +30,8 @@ public class LifeThread extends Thread {
 	 *                 Reference to the most recent array will be passed as the argument. See the class description.
 	 * @param grid The initial array.
 	 * @param next Another array of same size as {@code grid}. See the class description for an important note on the naming.*/
-	public LifeThread(LifeUniverse sim, int lifecycle, ParameteredRunnable callback, boolean[][] grid, boolean[][] next) {
+	public LifeThread(final LifeUniverse sim, final int lifecycle,final ParameteredRunnable callback,
+					  final boolean[][] grid, final boolean[][] next) {
 		this.sim = sim;
 		this.lifecycle = lifecycle;
 		this.callback = callback;
@@ -40,7 +41,7 @@ public class LifeThread extends Thread {
 
 	@Override public void run() {
 		while(!stopped) {
-			long timeStarted = System.currentTimeMillis();
+			final long timeStarted = System.currentTimeMillis();
 			//Check the entire grid to determine if cells are to die or not
 			sim.step(grid, next);
 			//Apply overrides
@@ -51,13 +52,13 @@ public class LifeThread extends Thread {
 				overrideList.clear();
 			}
 			//Swap arrays to avoid allocation. The old values aren't needed, so we can safely rename it to next to be overwritten
-			boolean[][] tempArray = grid;
+			final boolean[][] tempArray = grid;
 			grid = next;
 			next = tempArray;
 			//Signal that a cycle has finished
 			callback.run(grid);
 			//Handle interrupts
-			long timeToSleep = lifecycle - (System.currentTimeMillis() - timeStarted);
+			final long timeToSleep = lifecycle - (System.currentTimeMillis() - timeStarted);
 			try {
 				if(timeToSleep > 0) Thread.sleep(timeToSleep);
 			}

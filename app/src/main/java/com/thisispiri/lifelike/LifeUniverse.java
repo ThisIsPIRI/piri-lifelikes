@@ -14,14 +14,14 @@ public class LifeUniverse {
 	public boolean[] birthNumbers;
 	/**A 9-element array. An alive cell survives if surviveNumbers[the number of its alive neighbors] is true.*/
 	public boolean[] surviveNumbers;
-	public LifeUniverse(boolean[][] grid, boolean[] birthNumbers, boolean[] surviveNumbers) {
+	public LifeUniverse(final boolean[][] grid, final boolean[] birthNumbers, final boolean[] surviveNumbers) {
 		this.grid = grid;
 		this.birthNumbers = birthNumbers;
 		this.surviveNumbers = surviveNumbers;
 	}
 	/**Simulates one step of life and returns the result in a newly allocated array.
 	 * Slow compared to {@link LifeUniverse#step(boolean[][], boolean[][])}*/
-	public boolean[][] step(boolean[][] grid) {
+	public boolean[][] step(final boolean[][] grid) {
 		this.grid = grid; //TODO DRY grid field update
 		boolean[][] result = new boolean[grid.length][grid[0].length];
 		step(grid, result);
@@ -30,7 +30,7 @@ public class LifeUniverse {
 	/**Simulates one step of life and writes the result in {@code result}.
 	 * @param grid The current state of lives. Must be rectangular(i.e. all rows must have same length).
 	 * @param result The array to write results to. Must be different from {@code grid}.*/
-	public void step(boolean[][] grid, boolean[][] result) {
+	public void step(final boolean[][] grid, final boolean[][] result) {
 		this.grid = grid;
 		int checkResult;
 		for(int h = 0; h < grid.length; h++) {
@@ -41,7 +41,7 @@ public class LifeUniverse {
 		}
 	}
 	/***Returns the number of cells adjacent to grid[y][x].*/
-	private int safeCellCheck(int x, int y, boolean[][] grid) {
+	private int safeCellCheck(final int x, final int y, final boolean[][] grid) {
 		int sum = 0;
 		if(y > 0) {
 			if(x > 0)
@@ -70,7 +70,7 @@ public class LifeUniverse {
 	 * @param y y coordinate of the center.
 	 * @param size The length of the square.
 	 * @param revive If true, cells inside the area are revived. If false, they are killed.*/
-	public void paintSquare(boolean[][] grid, int x, int y, int size, boolean revive) {
+	public void paintSquare(final boolean[][] grid, final int x, final int y, final int size, final boolean revive) {
 		this.grid = grid;
 		grid[y][x] = revive;
 		for (int i = 2; i <= size; i++) {
@@ -102,7 +102,7 @@ public class LifeUniverse {
 	}
 	/**Adds (x, y), then up to 4 random {@code Point}s no farther than 4 cells from (x, y), to the {@code list}.
 	 * @param random the {@code Random} object to use.*/
-	public void paintRandom(List<Point> list, int x, int y, Random random) {
+	public void paintRandom(final List<Point> list, final int x, final int y, final Random random) {
 		list.add(new Point(x, y));
 		int[] xT = {1, -1, -1, 1}, yT = {1, -1, 1, -1};
 		for(int i = 0;i < xT.length;i++) {
@@ -111,7 +111,7 @@ public class LifeUniverse {
 			if(inBoundary(cX, cY)) list.add(new Point(cX, cY));
 		}
 	}
-	private boolean xInBoundary(int x) {return x < grid[0].length && x >= 0;}
-	private boolean yInBoundary(int y) {return y < grid.length && y >= 0;}
-	private boolean inBoundary(int x, int y) {return xInBoundary(x) && yInBoundary(y);}
+	private boolean xInBoundary(final int x) {return x < grid[0].length && x >= 0;}
+	private boolean yInBoundary(final int y) {return y < grid.length && y >= 0;}
+	private boolean inBoundary(final int x, final int y) {return xInBoundary(x) && yInBoundary(y);}
 }
