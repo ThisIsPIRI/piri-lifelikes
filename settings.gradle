@@ -1,1 +1,1 @@
-include ':app', ':piricomponents-release', ':piripreferences-release'
+include ':app'

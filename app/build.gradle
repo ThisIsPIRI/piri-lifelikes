@@ -16,12 +16,14 @@ android {
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 		}
 	}
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
 }
 
 dependencies {
-	implementation project(':piricomponents-release')
-	implementation project(':piripreferences-release')
-	implementation fileTree(dir: 'libs', include: ['*.jar'])
+	implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
 	implementation 'androidx.appcompat:appcompat:1.1.0'
 	testImplementation 'junit:junit:4.12'
 	androidTestImplementation 'com.android.support.test:runner:1.0.2'

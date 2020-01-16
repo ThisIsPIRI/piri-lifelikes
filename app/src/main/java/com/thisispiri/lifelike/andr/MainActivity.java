@@ -12,17 +12,23 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
+import com.thisispiri.common.andr.AndrUtil;
+import com.thisispiri.dialogs.DialogListener;
+import com.thisispiri.dialogs.EditTextDialogFragment;
 import com.thisispiri.lifelike.LifeUniverse;
 import com.thisispiri.lifelike.LifeThread;
+import com.thisispiri.lifelike.LifelikeSaveLoader;
 import com.thisispiri.lifelike.ParameteredRunnable;
 import com.thisispiri.lifelike.R;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity { //TODO add save/load, add action_view
+public class MainActivity extends AppCompatActivity implements DialogListener { //TODO add save/load, add action_view
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	private @ColorInt int cellColor, backgroundColor;
@@ -38,6 +44,9 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 	private boolean brushEnabled = true;
 	private final boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
 	private LifeUniverse simulator;
+	private final static String TAG_EDITTEXT = "TAG_EDITTEXT";
+	private final static String TAG_IN_BUNDLE = "i_tagInBundle";
+	private final static String DIRECTORY_NAME = "PIRI/Life-likes";
 
 	private final ParameteredRunnable threadCallback = new ParameteredRunnable() {
 		@Override public void run(final Object param) {
@@ -146,10 +155,9 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 				eraserToggle.setText(brushEnabled ? R.string.eraserToggleWriting : R.string.eraserToggleErasing);
 				break;
 			case R.id.save:
-				android.util.Log.d("PIRIMNK", "save pressed");
+				saveUniverse(null);
 				break;
 			case R.id.load:
-				android.util.Log.d("PIRILL", "load pressed");
 				break;
 			}
 		}
@@ -169,6 +177,27 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 			return true;
 		}
 	}
+	@Override public <T>void giveResult(T result, Bundle arguments) {
+		if(arguments == null) {
+			AndrUtil.showToast(this, "Error: giveResults arguments were null.");
+			return;
+		}
+		final String tag = arguments.getString(TAG_IN_BUNDLE);
+		if(tag == null) {
+			AndrUtil.showToast(this, "Error: giveResult arguments didn't contain a tag.");
+			return;
+		}
+		switch(tag) {
+		case TAG_EDITTEXT:
+			try {
+				saveUniverse(AndrUtil.getFile(DIRECTORY_NAME, (String) result, true));
+			}
+			catch(IOException e) {
+				AndrUtil.showToast(this, getString(R.string.couldntCreateFile));
+			}
+			break;
+		}
+	}
 	//SECTION: Other logic
 	/**Starts or pauses the game so you don't have to change the start button's text or deal with mainThread all over the place.
 	 * @param pause If true, pauses the game. If false, starts the game.*/
@@ -185,6 +214,21 @@ public class MainActivity extends AppCompatActivity { //TODO add save/load, add 
 			mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
 			mainThread.start();
 			start.setText(R.string.pause);
+		}
+	}
+	private void saveUniverse(File file) {
+		if(file == null) {
+			EditTextDialogFragment f = new EditTextDialogFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString(TAG_IN_BUNDLE, TAG_EDITTEXT);
+			f.setArguments(bundle);
+			f.show(getSupportFragmentManager(), TAG_EDITTEXT, "save game", "filename");
+		}
+		else try {
+			LifelikeSaveLoader.save(currentGrid, file, LifelikeSaveLoader.Format.PLAINTEXT, "testtest");
+		}
+		catch(IOException e) {
+			AndrUtil.showToast(this, getString(R.string.couldntWriteFile));
 		}
 	}
 	/**Allocates new boolean[height][width]s for currentGrid and nextGrid.

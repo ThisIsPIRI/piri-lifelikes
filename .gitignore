@@ -11,9 +11,6 @@
 .idea/
 build/
 gradle/
-piridialogs-release/
-piricomponents-release/
-piripreferences-release/
 docs/
 **.properties
 gradlew**

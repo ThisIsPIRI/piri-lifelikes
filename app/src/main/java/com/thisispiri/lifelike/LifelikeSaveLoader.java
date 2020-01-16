@@ -9,11 +9,11 @@ import java.io.OutputStreamWriter;
 
 /**Writes on and reads from .cells, .lif and .rle files a Life-like world.*/
 public class LifelikeSaveLoader {
-	enum Format {
+	public enum Format {
 		PLAINTEXT, LIFE105, LIFE106, RLE
 	}
 	/**Saves the grid.*/
-	public void save(final boolean[][] grid, final File file, final Format format, final String name) throws IOException {
+	public static void save(final boolean[][] grid, final File file, final Format format, final String name) throws IOException {
 		if(format == Format.PLAINTEXT) {
 			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file));
 			writer.write(String.format("!Name: %s\n!\n", name)); //Header
@@ -29,7 +29,7 @@ public class LifelikeSaveLoader {
 			throw new IOException("PIRI Life-likes: stub called - other formats not supported yet");
 		}
 	}
-	public LifeUniverse load(final File file) throws IOException {
+	public static LifeUniverse load(final File file) throws IOException {
 		boolean[][] grid;
 		boolean[][] birthNumbers, surviveNumbers;
 		LifeUniverse universe;
