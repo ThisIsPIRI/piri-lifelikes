@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 				saveUniverse(null);
 				break;
 			case R.id.load:
+				loadUniverse(null);
 				break;
 			}
 		}
@@ -177,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 			return true;
 		}
 	}
-	@Override public <T>void giveResult(T result, Bundle arguments) {
+	@Override public <T>void giveResult(final T result, final Bundle arguments) {
 		if(arguments == null) {
 			AndrUtil.showToast(this, "Error: giveResults arguments were null.");
 			return;
@@ -189,11 +190,10 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		}
 		switch(tag) {
 		case TAG_EDITTEXT:
-			try {
-				saveUniverse(AndrUtil.getFile(DIRECTORY_NAME, (String) result, true));
-			}
-			catch(IOException e) {
-				AndrUtil.showToast(this, getString(R.string.couldntCreateFile));
+			final String message = arguments.getString(getString(R.string.piri_dialogs_messageArgument));
+			if(result != null && message != null) {
+				if(message.equals(getString(R.string.save))) saveUniverse((String) result);
+				else if(message.equals(getString(R.string.load))) loadUniverse((String) result);
 			}
 			break;
 		}
@@ -216,19 +216,28 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 			start.setText(R.string.pause);
 		}
 	}
-	private void saveUniverse(File file) {
-		if(file == null) {
-			EditTextDialogFragment f = new EditTextDialogFragment();
-			Bundle bundle = new Bundle();
-			bundle.putString(TAG_IN_BUNDLE, TAG_EDITTEXT);
-			f.setArguments(bundle);
-			f.show(getSupportFragmentManager(), TAG_EDITTEXT, "save game", "filename");
-		}
+	private void showEditTextDialog(final String message, final String hint) { //TODO: Move to PIRI Dialogs
+		final EditTextDialogFragment f = new EditTextDialogFragment();
+		f.setArguments(AndrUtil.bundleWith(TAG_IN_BUNDLE, TAG_EDITTEXT));
+		f.show(getSupportFragmentManager(), TAG_EDITTEXT, message, hint);
+	}
+	private void saveUniverse(final String filename) {
+		if(filename == null) showEditTextDialog(getString(R.string.save), getString(R.string.filename));
 		else try {
-			LifelikeSaveLoader.save(currentGrid, file, LifelikeSaveLoader.Format.PLAINTEXT, "testtest");
+			LifelikeSaveLoader.save(currentGrid, AndrUtil.getFile(DIRECTORY_NAME, filename, true),
+					LifelikeSaveLoader.Format.PLAINTEXT, "testtest");
 		}
 		catch(IOException e) {
 			AndrUtil.showToast(this, getString(R.string.couldntWriteFile));
+		}
+	}
+	private void loadUniverse(final String filename){
+		if(filename == null) showEditTextDialog(getString(R.string.load), getString(R.string.filename));
+		else try {
+			LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
+		}
+		catch(IOException e) {
+			AndrUtil.showToast(this, getString(R.string.couldntReadFile));
 		}
 	}
 	/**Allocates new boolean[height][width]s for currentGrid and nextGrid.
@@ -236,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	 *                     If the previous grid is smaller, it will be copied to upper left region of the new one.
 	 *                     If it is larger, its upper left region will be copied to the new one.*/
 	private void allocateGrids(final boolean copyPrevious) {
-		boolean[][] tempGrid = currentGrid;
+		final boolean[][] tempGrid = currentGrid;
 		currentGrid = new boolean[height][width];
 		nextGrid = new boolean[height][width];
 		if(copyPrevious && tempGrid != null) { //Copy over the previous grid if one exists
