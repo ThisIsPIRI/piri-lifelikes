@@ -1,8 +1,12 @@
 package com.thisispiri.lifelike.andr;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +23,8 @@ import com.thisispiri.lifelike.LifeThread;
 import com.thisispiri.lifelike.LifelikeSaveLoader;
 import com.thisispiri.lifelike.ParameteredRunnable;
 import com.thisispiri.lifelike.R;
+
+import static com.thisispiri.common.andr.AndrUtil.getPermission;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -40,9 +46,11 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	private boolean isPlaying = false;
 	private boolean brushEnabled = true;
 	private LifeUniverse sim;
+	private int displayDialog;
 	private final static String TAG_EDITTEXT = "TAG_EDITTEXT";
 	private final static String TAG_IN_BUNDLE = "i_tagInBundle";
 	private final static String DIRECTORY_NAME = "PIRI/Life-likes";
+	private final static int SAVE_REQUEST_CODE = 312, LOAD_REQUEST_CODE = 313;
 
 	private final ParameteredRunnable threadCallback = new ParameteredRunnable() {
 		@Override public void run(final Object param) {
@@ -158,12 +166,35 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 				eraserToggle.setText(brushEnabled ? R.string.eraserToggleWriting : R.string.eraserToggleErasing);
 				break;
 			case R.id.save:
-				saveUniverse(null);
+				if(getPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+						SAVE_REQUEST_CODE, R.string.saveRationale))
+					saveUniverse(null);
 				break;
 			case R.id.load:
-				loadUniverse(null);
+				//Reading permission is not enforced under API 19
+				if(android.os.Build.VERSION.SDK_INT < 19 || getPermission(MainActivity.this,
+						Manifest.permission.READ_EXTERNAL_STORAGE, LOAD_REQUEST_CODE, R.string.loadRationale))
+					loadUniverse(null);
 				break;
 			}
+		}
+	}
+	/**Shows the {@code Dialog} {@link MainActivity#displayDialog} points to and initializes it.*/
+	@Override public void onResumeFragments() {
+		super.onResumeFragments();
+		switch(displayDialog) {
+		case SAVE_REQUEST_CODE:
+			saveUniverse(null); break;
+		case LOAD_REQUEST_CODE:
+			loadUniverse(null); break;
+		}
+		displayDialog = 0;
+	}
+	@Override public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
+		if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			//IllegalStateException is thrown if we call DialogFragment.show() here(https://stackoverflow.com/q/33264031).
+			//onResumeFragments() will indirectly call it by calling saveGame() or loadGame()
+			displayDialog = requestCode;
 		}
 	}
 	private class LifeTouchListener implements View.OnTouchListener {

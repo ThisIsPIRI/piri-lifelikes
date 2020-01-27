@@ -24,4 +24,6 @@
 	<string name="couldntWriteFile">Couldn\'t write to file</string>
 	<string name="filename">Filename</string>
 	<string name="couldntReadFile">Couldn\'t read the file</string>
+	<string name="saveRationale">The permission is needed to save files.</string>
+	<string name="loadRationale">The permission is needed to read files.</string>
 </resources>
