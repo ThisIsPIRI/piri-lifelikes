@@ -3,7 +3,6 @@ package com.thisispiri.lifelike.andr;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,7 +20,6 @@ import com.thisispiri.lifelike.LifelikeSaveLoader;
 import com.thisispiri.lifelike.ParameteredRunnable;
 import com.thisispiri.lifelike.R;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -31,7 +29,6 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity implements DialogListener { //TODO add save/load, add action_view
 	private int cellSize = -1, width, height;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
-	private @ColorInt int cellColor, backgroundColor;
 	/**The most recent grid. Use this for everything--displaying, saving, recovering...*/
 	private boolean[][] currentGrid;
 	/**The empty slate for the next step. The data it holds should be treated as garbage.*/
@@ -42,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	private Button start, eraserToggle;
 	private boolean isPlaying = false;
 	private boolean brushEnabled = true;
-	private final boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
 	private LifeUniverse simulator;
 	private final static String TAG_EDITTEXT = "TAG_EDITTEXT";
 	private final static String TAG_IN_BUNDLE = "i_tagInBundle";
@@ -72,13 +68,16 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	private final Handler handler = new UiHandler(new WeakReference<>(this));
 
 	//SECTION: Android callbacks
-	private void updatePreferences() {
+	@Override public void onStart() {
+		super.onStart();
+		final int cellSizeTemp = cellSize;
+
+		//Old updatePreferences
 		final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		cellSize = pref.getInt("cellSize", 16);
 		pauseBrushSize = pref.getInt("pauseBrushSize", 1);
 		lifecycle = pref.getInt("lifecycle", 0);
-		cellColor = pref.getInt("cellColor", 0xFF000000);
-		backgroundColor = pref.getInt("backgroundColor", 0xFFFFFFFF);
+		final boolean[] birthNumbers = new boolean[9], surviveNumbers = new boolean[9];
 		//Fill the arrays with false first as we only take true values from the Preferences
 		Arrays.fill(birthNumbers, false);
 		Arrays.fill(surviveNumbers, false);
@@ -90,11 +89,8 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 			surviveNumbers[2] = surviveNumbers[3] = true;
 		}
 		else for (String s : set) surviveNumbers[Integer.valueOf(s)] = true;
-	}
-	@Override public void onStart() {
-		super.onStart();
-		final int cellSizeTemp = cellSize;
-		updatePreferences();
+
+
 		//If cell size has changed, readjust array size and redraw. Always true after onCreate
 		if(cellSize != cellSizeTemp) {
 			width = screenWidth / cellSize;
@@ -102,7 +98,9 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 			allocateGrids(true);
 		}
 		simulator = new LifeUniverse(currentGrid, birthNumbers, surviveNumbers);
-		lifeView.setData(currentGrid, cellSize, height, width, cellColor, backgroundColor);
+		lifeView.setData(currentGrid, cellSize, height, width,
+				pref.getInt("cellColor", 0xFF000000),
+				pref.getInt("backgroundColor", 0xFFFFFFFF));
 		lifeView.invalidate();
 		//Just so setting and clear buttons don't crash the app when pressed before start
 		mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
@@ -236,12 +234,13 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		pause(true);
 		if(filename == null) showEditTextDialog(getString(R.string.load), getString(R.string.filename));
 		else try {
+			LifeUniverse simTemp = simulator;
 			simulator = LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
 			//Grid references in mainThread will be updated when the universe is unpaused. No need to refresh them here.
 			//TODO: Handle different cellSize
-			if(simulator.birthNumbers == null) {
-				simulator.birthNumbers = birthNumbers;
-				simulator.surviveNumbers = surviveNumbers;
+			if(simulator.birthNumbers == null) { //Use current values if file doesn't include rules
+				simulator.birthNumbers = simTemp.birthNumbers;
+				simulator.surviveNumbers = simTemp.surviveNumbers;
 			}
 			currentGrid = simulator.grid;
 			nextGrid = new boolean[currentGrid.length][currentGrid[0].length];
