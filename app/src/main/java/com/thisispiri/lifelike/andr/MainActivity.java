@@ -144,6 +144,21 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		super.onBackPressed();
 	}
 	//SECTION: Listeners
+	private class LifeTouchListener implements View.OnTouchListener {
+		private final Random random = new Random();
+		@Override public boolean onTouch(final View v, final MotionEvent m) {
+			final int x = Math.round(m.getX()), y = Math.round(m.getY());
+			final int iX = x * sim.grid[0].length / screenWidth, iY = y * sim.grid.length / screenHeight;
+			if ((iY >= 0) && (iX >= 0) && (iY < (sim.grid.length - 1)) && (iX < (sim.grid[0].length - 1))) {
+				//If not paused, randomly resurrect cells near touch location according to brush size.
+				if (isPlaying) sim.paintRandom(mainThread.overrideList, iX, iY, random);
+					//If paused, resurrect brush size * brush size cells.
+				else sim.paintSquare(currentGrid, iX, iY, pauseBrushSize, brushEnabled);
+			}
+			lifeView.invalidate();
+			return true;
+		}
+	}
 	//handle button click events
 	private class LifeButtonListener implements View.OnClickListener {
 		@Override public void onClick(final View v) {
@@ -179,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 			}
 		}
 	}
+	//SECTION: Dialogs
 	/**Shows the {@code Dialog} {@link MainActivity#displayDialog} points to and initializes it.*/
 	@Override public void onResumeFragments() {
 		super.onResumeFragments();
@@ -193,23 +209,8 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	@Override public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
 		if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 			//IllegalStateException is thrown if we call DialogFragment.show() here(https://stackoverflow.com/q/33264031).
-			//onResumeFragments() will indirectly call it by calling saveGame() or loadGame()
+			//saveGame() calls show(), so we call that in onResumeFragments()
 			displayDialog = requestCode;
-		}
-	}
-	private class LifeTouchListener implements View.OnTouchListener {
-		private final Random random = new Random();
-		@Override public boolean onTouch(final View v, final MotionEvent m) {
-			final int x = Math.round(m.getX()), y = Math.round(m.getY());
-			final int iX = x * sim.grid[0].length / screenWidth, iY = y * sim.grid.length / screenHeight;
-			if ((iY >= 0) && (iX >= 0) && (iY < (sim.grid.length - 1)) && (iX < (sim.grid[0].length - 1))) {
-				//If not paused, randomly resurrect cells near touch location according to brush size.
-				if (isPlaying) sim.paintRandom(mainThread.overrideList, iX, iY, random);
-				//If paused, resurrect brush size * brush size cells.
-				else sim.paintSquare(currentGrid, iX, iY, pauseBrushSize, brushEnabled);
-			}
-			lifeView.invalidate();
-			return true;
 		}
 	}
 	@Override public <T>void giveResult(final T result, final Bundle arguments) {
@@ -230,24 +231,6 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 				else if(message.equals(getString(R.string.load))) loadUniverse((String) result);
 			}
 			break;
-		}
-	}
-	//SECTION: Other logic
-	/**Starts or pauses the game so you don't have to change the start button's text or deal with mainThread all over the place.
-	 * @param pause If true, pauses the game. If false, starts the game.*/
-	private void pause(final boolean pause) {
-		if(pause != isPlaying) //Do nothing if we're already in the desired state
-			return;
-		if(pause) {
-			isPlaying = false;
-			mainThread.stopped = true;
-			start.setText(R.string.start);
-		}
-		else {
-			isPlaying = true;
-			mainThread = new LifeThread(sim, lifecycle, threadCallback, currentGrid, nextGrid);
-			mainThread.start();
-			start.setText(R.string.pause);
 		}
 	}
 	private void showEditTextDialog(final String message, final String hint) { //TODO: Move to PIRI Dialogs
@@ -288,6 +271,24 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		}
 		catch(IOException e) {
 			AndrUtil.showToast(this, getString(R.string.couldntReadFile));
+		}
+	}
+	//SECTION: Other logic
+	/**Starts or pauses the game so you don't have to change the start button's text or deal with mainThread all over the place.
+	 * @param pause If true, pauses the game. If false, starts the game.*/
+	private void pause(final boolean pause) {
+		if(pause != isPlaying) //Do nothing if we're already in the desired state
+			return;
+		if(pause) {
+			isPlaying = false;
+			mainThread.stopped = true;
+			start.setText(R.string.start);
+		}
+		else {
+			isPlaying = true;
+			mainThread = new LifeThread(sim, lifecycle, threadCallback, currentGrid, nextGrid);
+			mainThread.start();
+			start.setText(R.string.pause);
 		}
 	}
 	/**Allocates new boolean[height][width]s for currentGrid and nextGrid.

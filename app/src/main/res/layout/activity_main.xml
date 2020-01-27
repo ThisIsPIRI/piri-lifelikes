@@ -17,19 +17,25 @@
 			android:text="@string/start"
 			android:layout_weight="1"
 			android:layout_width="0dp"
-			android:layout_height="match_parent"/>
+			android:layout_height="match_parent"
+			android:includeFontPadding="false"
+			android:background="?attr/selectableItemBackground"/>
 		<Button
 			android:id="@+id/setting"
 			android:text="@string/setting"
 			android:layout_weight="1"
 			android:layout_width="0dp"
-			android:layout_height="match_parent"/>
+			android:layout_height="match_parent"
+			android:includeFontPadding="false"
+			android:background="?attr/selectableItemBackground"/>
 		<Button
 			android:id="@+id/clear"
 			android:text="@string/clear"
 			android:layout_weight="1"
 			android:layout_width="0dp"
-			android:layout_height="match_parent"/>
+			android:layout_height="match_parent"
+			android:includeFontPadding="false"
+			android:background="?attr/selectableItemBackground"/>
 	</LinearLayout>
 	<LinearLayout
 		android:layout_width="match_parent"
@@ -41,19 +47,25 @@
 			android:text="@string/save"
 			android:layout_weight="1"
 			android:layout_width="0dp"
-			android:layout_height="match_parent"/>
+			android:layout_height="match_parent"
+			android:includeFontPadding="false"
+			android:background="?attr/selectableItemBackground"/>
 		<Button
 			android:id="@+id/load"
 			android:text="@string/load"
 			android:layout_weight="1"
 			android:layout_width="0dp"
-			android:layout_height="match_parent"/>
+			android:layout_height="match_parent"
+			android:includeFontPadding="false"
+			android:background="?attr/selectableItemBackground"/>
 		<Button
 			android:id="@+id/eraserToggle"
 			android:text="@string/eraserToggleWriting"
 			android:layout_weight="1"
 			android:layout_width="0dp"
-			android:layout_height="match_parent"/>
+			android:layout_height="match_parent"
+			android:includeFontPadding="false"
+			android:background="?attr/selectableItemBackground"/>
 	</LinearLayout>
 
 	<com.thisispiri.lifelike.andr.LifeView
