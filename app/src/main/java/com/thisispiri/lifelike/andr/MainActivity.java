@@ -225,8 +225,8 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		pause(true);
 		if(filename == null) showEditTextDialog(getString(R.string.save), getString(R.string.filename));
 		else try {
-			LifelikeSaveLoader.save(currentGrid, AndrUtil.getFile(DIRECTORY_NAME, filename, true),
-					LifelikeSaveLoader.Format.PLAINTEXT, "testtest");
+			LifelikeSaveLoader.save(simulator, AndrUtil.getFile(DIRECTORY_NAME, filename, true),
+					LifelikeSaveLoader.Format.PLAINTEXT, filename);
 		}
 		catch(IOException e) {
 			AndrUtil.showToast(this, getString(R.string.couldntWriteFile));
@@ -239,6 +239,10 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 			simulator = LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
 			//Grid references in mainThread will be updated when the universe is unpaused. No need to refresh them here.
 			//TODO: Handle different cellSize
+			if(simulator.birthNumbers == null) {
+				simulator.birthNumbers = birthNumbers;
+				simulator.surviveNumbers = surviveNumbers;
+			}
 			currentGrid = simulator.grid;
 			nextGrid = new boolean[currentGrid.length][currentGrid[0].length];
 			lifeView.invalidate(currentGrid);
