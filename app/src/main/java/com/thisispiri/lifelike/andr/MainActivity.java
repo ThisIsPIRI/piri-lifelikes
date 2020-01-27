@@ -26,8 +26,8 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements DialogListener { //TODO add save/load, add action_view
-	private int cellSize = -1, width, height;
+public class MainActivity extends AppCompatActivity implements DialogListener { //TODO ask whether to save file rules when loading, add action_view
+	private int cellSize = -1;
 	private int screenHeight, screenWidth, pauseBrushSize, lifecycle;
 	/**The most recent grid. Use this for everything--displaying, saving, recovering...*/
 	private boolean[][] currentGrid;
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	private Button start, eraserToggle;
 	private boolean isPlaying = false;
 	private boolean brushEnabled = true;
-	private LifeUniverse simulator;
+	private LifeUniverse sim;
 	private final static String TAG_EDITTEXT = "TAG_EDITTEXT";
 	private final static String TAG_IN_BUNDLE = "i_tagInBundle";
 	private final static String DIRECTORY_NAME = "PIRI/Life-likes";
@@ -92,18 +92,23 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 
 
 		//If cell size has changed, readjust array size and redraw. Always true after onCreate
+		int width, height;
 		if(cellSize != cellSizeTemp) {
 			width = screenWidth / cellSize;
 			height = screenHeight / cellSize;
-			allocateGrids(true);
+			allocateGrids(true, width, height);
 		}
-		simulator = new LifeUniverse(currentGrid, birthNumbers, surviveNumbers);
+		else {
+			width = sim.grid[0].length;
+			height = sim.grid.length;
+		}
+		sim = new LifeUniverse(currentGrid, birthNumbers, surviveNumbers);
 		lifeView.setData(currentGrid, cellSize, height, width,
 				pref.getInt("cellColor", 0xFF000000),
 				pref.getInt("backgroundColor", 0xFFFFFFFF));
 		lifeView.invalidate();
 		//Just so setting and clear buttons don't crash the app when pressed before start
-		mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
+		mainThread = new LifeThread(sim, lifecycle, threadCallback, currentGrid, nextGrid);
 	}
 	@Override protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -145,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 				break;
 			case R.id.clear:
 				pause(true);
-				allocateGrids(false);
+				allocateGrids(false, sim.grid[0].length, sim.grid.length);
 				lifeView.invalidate(currentGrid);
 				break;
 			case R.id.eraserToggle:
@@ -165,12 +170,12 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		private final Random random = new Random();
 		@Override public boolean onTouch(final View v, final MotionEvent m) {
 			final int x = Math.round(m.getX()), y = Math.round(m.getY());
-			final int iX = x * width / screenWidth, iY = y * height / screenHeight;
-			if ((iY >= 0) && (iX >= 0) && (iY < (height - 1)) && (iX < (width - 1))) {
+			final int iX = x * sim.grid[0].length / screenWidth, iY = y * sim.grid.length / screenHeight;
+			if ((iY >= 0) && (iX >= 0) && (iY < (sim.grid.length - 1)) && (iX < (sim.grid[0].length - 1))) {
 				//If not paused, randomly resurrect cells near touch location according to brush size.
-				if (isPlaying) simulator.paintRandom(mainThread.overrideList, iX, iY, random);
+				if (isPlaying) sim.paintRandom(mainThread.overrideList, iX, iY, random);
 				//If paused, resurrect brush size * brush size cells.
-				else simulator.paintSquare(currentGrid, iX, iY, pauseBrushSize, brushEnabled);
+				else sim.paintSquare(currentGrid, iX, iY, pauseBrushSize, brushEnabled);
 			}
 			lifeView.invalidate();
 			return true;
@@ -209,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		}
 		else {
 			isPlaying = true;
-			mainThread = new LifeThread(simulator, lifecycle, threadCallback, currentGrid, nextGrid);
+			mainThread = new LifeThread(sim, lifecycle, threadCallback, currentGrid, nextGrid);
 			mainThread.start();
 			start.setText(R.string.pause);
 		}
@@ -223,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		pause(true);
 		if(filename == null) showEditTextDialog(getString(R.string.save), getString(R.string.filename));
 		else try {
-			LifelikeSaveLoader.save(simulator, AndrUtil.getFile(DIRECTORY_NAME, filename, true),
+			LifelikeSaveLoader.save(sim, AndrUtil.getFile(DIRECTORY_NAME, filename, true),
 					LifelikeSaveLoader.Format.PLAINTEXT, filename);
 		}
 		catch(IOException e) {
@@ -234,16 +239,20 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		pause(true);
 		if(filename == null) showEditTextDialog(getString(R.string.load), getString(R.string.filename));
 		else try {
-			LifeUniverse simTemp = simulator;
-			simulator = LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
+			LifeUniverse simTemp = sim;
+			sim = LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
 			//Grid references in mainThread will be updated when the universe is unpaused. No need to refresh them here.
-			//TODO: Handle different cellSize
-			if(simulator.birthNumbers == null) { //Use current values if file doesn't include rules
-				simulator.birthNumbers = simTemp.birthNumbers;
-				simulator.surviveNumbers = simTemp.surviveNumbers;
-			}
-			currentGrid = simulator.grid;
+			currentGrid = sim.grid;
 			nextGrid = new boolean[currentGrid.length][currentGrid[0].length];
+			if(sim.birthNumbers == null) { //Use current values if file doesn't include rules
+				sim.birthNumbers = simTemp.birthNumbers;
+				sim.surviveNumbers = simTemp.surviveNumbers;
+			}
+			//Handle cases where universe size in file is different from current one
+			if(sim.grid.length != simTemp.grid.length || sim.grid[0].length != simTemp.grid[0].length) {
+				cellSize = screenWidth / sim.grid[0].length;
+				lifeView.setData(currentGrid, cellSize, sim.grid.length, sim.grid[0].length);
+			}
 			lifeView.invalidate(currentGrid);
 		}
 		catch(IOException e) {
@@ -254,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	 * @param copyPrevious If true, the values in previous currentGrid will be copied to the new currentGrid.
 	 *                     If the previous grid is smaller, it will be copied to upper left region of the new one.
 	 *                     If it is larger, its upper left region will be copied to the new one.*/
-	private void allocateGrids(final boolean copyPrevious) {
+	private void allocateGrids(final boolean copyPrevious, final int width, final int height) {
 		final boolean[][] tempGrid = currentGrid;
 		currentGrid = new boolean[height][width];
 		nextGrid = new boolean[height][width];

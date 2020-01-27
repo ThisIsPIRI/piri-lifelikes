@@ -21,7 +21,6 @@
 	<string name="load">불러오기</string>
 	<string name="eraserToggleWriting">붓</string>
 	<string name="eraserToggleErasing">지우개</string>
-	<string name="couldntCreateFile">파일을 만들지 못했습니다</string>
 	<string name="couldntWriteFile">파일에 쓰지 못했습니다</string>
 	<string name="filename">파일이름</string>
 	<string name="couldntReadFile">파일을 읽지 못했습니다</string>

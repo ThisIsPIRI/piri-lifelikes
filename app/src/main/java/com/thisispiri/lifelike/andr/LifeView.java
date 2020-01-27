@@ -40,11 +40,15 @@ public class LifeView extends View {
 	 * @param backgroundColor The background color in ARGB.*/
 	public void setData(final boolean[][] array, final int cellSize, final int height, final int width,
 						final int cellColor, final int backgroundColor) {
+		setData(array, cellSize, height, width);
+		cell.setColor(cellColor);
+		background.setColor(backgroundColor);
+	}
+	/**@see LifeView#setData(boolean[][], int, int, int, int, int)*/
+	public void setData(final boolean[][] array, final int cellSize, final int height, final int width) {
 		this.array = array;
 		this.cellSize = cellSize;
 		this.height = height;
 		this.width = width;
-		cell.setColor(cellColor);
-		background.setColor(backgroundColor);
 	}
 }

@@ -21,7 +21,7 @@ public class LifeThread extends Thread {
 	private final LifeUniverse sim;
 	public boolean stopped = false; //if true, thread will stop.
 	/**Add a {@code Point} here to set that point's value to true no matter what in the next cycle.*/
-	public final List<Point> overrideList = Collections.synchronizedList(new ArrayList<Point>());
+	public final List<Point> overrideList = Collections.synchronizedList(new ArrayList<>());
 
 	/**Constructor.
 	 * @param sim The {@link LifeUniverse} instance to use.
