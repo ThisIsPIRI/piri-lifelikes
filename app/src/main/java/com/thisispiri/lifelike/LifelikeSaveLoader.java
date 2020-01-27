@@ -1,11 +1,13 @@
 package com.thisispiri.lifelike;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**Writes on and reads from .cells, .lif and .rle files a Life-like world.*/
 public class LifelikeSaveLoader {
@@ -30,25 +32,19 @@ public class LifelikeSaveLoader {
 		}
 	}
 	public static LifeUniverse load(final File file) throws IOException {
-		boolean[][] grid;
-		boolean[][] birthNumbers, surviveNumbers;
-		LifeUniverse universe;
-		InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
-		int skipper;
-		do {skipper = reader.read();}
-		while(skipper != '(' && skipper != -1);
-		if(reader.read() == ';') { //Plaintext format
-			char previous = 0, now;
-			while(reader.ready()) {
-				now = (char)reader.read();
-				//Process things
-				previous = now;
+		final List<boolean[]> grid = new ArrayList<>();
+		boolean[] birthNumbers = {true,false,false,false,false,false,false,false,false}, surviveNumbers = {false,false,false,false,false,false,false,false,false};
+		final BufferedReader reader = new BufferedReader(new FileReader(file));
+		String stringLine;
+		while((stringLine = reader.readLine()) != null) {
+			final boolean[] booleanLine = new boolean[stringLine.length()];
+			if(stringLine.contains("!")) continue;
+			for(int i =0;i < stringLine.length();i++) {
+				booleanLine[i] = stringLine.charAt(i) == 'O';
 			}
-		}
-		else {
-			throw new IOException("PIRI Life-likes: stub called - other formats not supported yet");
+			grid.add(booleanLine);
 		}
 		reader.close();
-		return null;
+		return new LifeUniverse(grid.toArray(new boolean[0][0]), birthNumbers, surviveNumbers);
 	}
 }

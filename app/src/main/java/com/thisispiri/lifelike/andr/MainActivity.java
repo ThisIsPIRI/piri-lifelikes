@@ -222,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		f.show(getSupportFragmentManager(), TAG_EDITTEXT, message, hint);
 	}
 	private void saveUniverse(final String filename) {
+		pause(true);
 		if(filename == null) showEditTextDialog(getString(R.string.save), getString(R.string.filename));
 		else try {
 			LifelikeSaveLoader.save(currentGrid, AndrUtil.getFile(DIRECTORY_NAME, filename, true),
@@ -232,9 +233,15 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		}
 	}
 	private void loadUniverse(final String filename){
+		pause(true);
 		if(filename == null) showEditTextDialog(getString(R.string.load), getString(R.string.filename));
 		else try {
-			LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
+			simulator = LifelikeSaveLoader.load(AndrUtil.getFile(DIRECTORY_NAME, filename, false));
+			//Grid references in mainThread will be updated when the universe is unpaused. No need to refresh them here.
+			//TODO: Handle different cellSize
+			currentGrid = simulator.grid;
+			nextGrid = new boolean[currentGrid.length][currentGrid[0].length];
+			lifeView.invalidate(currentGrid);
 		}
 		catch(IOException e) {
 			AndrUtil.showToast(this, getString(R.string.couldntReadFile));
