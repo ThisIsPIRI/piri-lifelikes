@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="app_name">피리 삶놀이</string>
 	<string name="clear">지우기</string>
 	<string name="pause">멈추기</string>
 	<string name="start">돌리기</string>
