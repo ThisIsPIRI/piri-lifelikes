@@ -91,13 +91,12 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		Arrays.fill(surviveNumbers, false);
 		Set<String> set = pref.getStringSet("birthNumbers", null);
 		if(set == null) birthNumbers[3] = true;
-		else for (String s : set) birthNumbers[Integer.valueOf(s)] = true;
+		else for (String s : set) birthNumbers[Integer.parseInt(s)] = true;
 		set = pref.getStringSet("surviveNumbers", null);
 		if(set == null) {
 			surviveNumbers[2] = surviveNumbers[3] = true;
 		}
-		else for (String s : set) surviveNumbers[Integer.valueOf(s)] = true;
-
+		else for (String s : set) surviveNumbers[Integer.parseInt(s)] = true;
 
 		//If cell size has changed, readjust array size and redraw. Always true after onCreate
 		int width, height;
@@ -162,35 +161,34 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	//handle button click events
 	private class LifeButtonListener implements View.OnClickListener {
 		@Override public void onClick(final View v) {
-			switch(v.getId()) {
-			case R.id.start:
+			int id = v.getId();
+			if(id == R.id.start) {
 				pause(isPlaying);
-				break;
-			case R.id.setting:
+			}
+			else if(id == R.id.setting) {
 				pause(true);
 				final Intent toSetting = new Intent(MainActivity.this, SettingActivity.class);
 				MainActivity.this.startActivityForResult(toSetting, 0);
-				break;
-			case R.id.clear:
+			}
+			else if(id == R.id.clear) {
 				pause(true);
 				allocateGrids(false, sim.grid[0].length, sim.grid.length);
 				lifeView.invalidate(currentGrid);
-				break;
-			case R.id.eraserToggle:
+			}
+			else if(id == R.id.eraserToggle) {
 				brushEnabled = !brushEnabled;
 				eraserToggle.setText(brushEnabled ? R.string.eraserToggleWriting : R.string.eraserToggleErasing);
-				break;
-			case R.id.save:
+			}
+			else if(id == R.id.save) {
 				if(getPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE,
 						SAVE_REQUEST_CODE, R.string.saveRationale))
 					saveUniverse(null);
-				break;
-			case R.id.load:
+			}
+			else if(id == R.id.load) {
 				//Reading permission is not enforced under API 19
 				if(android.os.Build.VERSION.SDK_INT < 19 || getPermission(MainActivity.this,
 						Manifest.permission.READ_EXTERNAL_STORAGE, LOAD_REQUEST_CODE, R.string.loadRationale))
 					loadUniverse(null);
-				break;
 			}
 		}
 	}

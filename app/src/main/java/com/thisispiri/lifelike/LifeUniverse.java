@@ -72,31 +72,10 @@ public class LifeUniverse {
 	 * @param revive If true, cells inside the area are revived. If false, they are killed.*/
 	public void paintSquare(final boolean[][] grid, final int x, final int y, final int size, final boolean revive) {
 		this.grid = grid;
-		grid[y][x] = revive;
-		for (int i = 2; i <= size; i++) {
-			if (i % 2 == 0) {
-				if (y + i / 2 < grid.length)
-					//(x - i / 2 + 1, y + i / 2) ~ (x + i / 2, y + i / 2) horizontal rightward
-					for (int j = x - i / 2 + 1; j <= x + i / 2; j++) {
-						if (xInBoundary(j)) grid[y + i / 2][j] = revive;
-					}
-				if (x + i / 2 < grid[0].length)
-					//(x + i / 2, y + i / 2) ~ (x + i / 2, y - i / 2 + 1) vertical upward
-					for (int j = y + i / 2 - 1; j >= y - i / 2 + 1; j--) {
-						if (yInBoundary(j)) grid[j][x + i / 2] = revive;
-					}
-			}
-			else {
-				if (y - i / 2 >= 0)
-					//(x + i / 2, y - i / 2) ~ (x - i / 2, y - i / 2) horizontal leftward
-					for (int j = x + i / 2; j >= x - i / 2; j--) {
-						if (xInBoundary(j)) grid[y - i / 2][j] = revive;
-					}
-				if (x - i / 2 >= 0)
-					//(x - i / 2, y - i / 2) ~ (x - i / 2, y + i / 2) vertical downward
-					for (int j = y - i / 2 + 1; j <= y + i / 2; j++) {
-						if (yInBoundary(j)) grid[j][x - i / 2] = revive;
-					}
+		int offset = (size - 1) / 2;
+		for(int i = y - offset;i < y - offset + size;i++) {
+			for(int j = x - offset;j < x - offset + size;j++) {
+				if(inBoundary(j, i)) grid[i][j] = revive;
 			}
 		}
 	}
@@ -111,7 +90,7 @@ public class LifeUniverse {
 			if(inBoundary(cX, cY)) list.add(new Point(cX, cY));
 		}
 	}
-	private boolean xInBoundary(final int x) {return x < grid[0].length && x >= 0;}
-	private boolean yInBoundary(final int y) {return y < grid.length && y >= 0;}
-	private boolean inBoundary(final int x, final int y) {return xInBoundary(x) && yInBoundary(y);}
+	private boolean inBoundary(final int x, final int y) {
+		return x < grid[0].length && x >= 0 && y < grid.length && y >= 0;
+	}
 }
