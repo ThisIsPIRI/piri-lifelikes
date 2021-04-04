@@ -41,6 +41,10 @@
 			android:digits="0123456789"
 			android:title="@string/lifecycle"
 			android:summary="@string/speedGuide"/>
+		<CheckBoxPreference
+			android:key="enableLines"
+			android:title="@string/showLines"
+			android:defaultValue="false"/>
 		<com.thisispiri.preferences.ArgbPreference
 			android:key="cellColor"
 			android:defaultValue="@integer/black"
@@ -49,6 +53,10 @@
 			android:key="backgroundColor"
 			android:defaultValue="@integer/white"
 			android:title="@string/backgroundColor"/>
+		<com.thisispiri.preferences.ArgbPreference
+			android:key="lineColor"
+			android:defaultValue="@integer/black"
+			android:title="@string/lineColor"/>
 		<com.thisispiri.preferences.CreditsPreference
 			android:title="@string/credits"
 			custom:text="The AOSP, for AndroidX in Apache License 2.0\nYou can obtain a copy of Apache License 2.0 at https://www.apache.org/licenses/LICENSE-2.0"/>

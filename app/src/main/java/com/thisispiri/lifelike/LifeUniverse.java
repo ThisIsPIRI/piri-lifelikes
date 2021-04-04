@@ -90,7 +90,7 @@ public class LifeUniverse {
 			if(inBoundary(cX, cY)) list.add(new Point(cX, cY));
 		}
 	}
-	private boolean inBoundary(final int x, final int y) {
+	public boolean inBoundary(final int x, final int y) {
 		return x < grid[0].length && x >= 0 && y < grid.length && y >= 0;
 	}
 }

@@ -17,6 +17,7 @@
 	<string name="others">그밖</string>
 	<string name="backgroundColor">바탕 빛깔</string>
 	<string name="cellColor">칸 빛깔</string>
+	<string name="lineColor">줄 빛깔</string>
 	<string name="credits">크레딧</string>
 	<string name="save">적어놓기</string>
 	<string name="load">불러오기</string>
@@ -27,4 +28,5 @@
 	<string name="couldntReadFile">파일을 읽지 못했습니다</string>
 	<string name="saveRationale">파일에 쓰려면 이 권한이 있어야 합니다.</string>
 	<string name="loadRationale">파일을 읽으려면 이 권한이 있어야 합니다.</string>
+	<string name="showLines">줄 보이기</string>
 </resources>

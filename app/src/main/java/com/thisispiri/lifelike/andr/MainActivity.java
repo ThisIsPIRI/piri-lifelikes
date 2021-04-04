@@ -112,7 +112,9 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 		sim = new LifeUniverse(currentGrid, birthNumbers, surviveNumbers);
 		lifeView.setData(currentGrid, cellSize, height, width,
 				pref.getInt("cellColor", 0xFF000000),
-				pref.getInt("backgroundColor", 0xFFFFFFFF));
+				pref.getInt("backgroundColor", 0xFFFFFFFF),
+				pref.getInt("lineColor", 0xFF000000));
+		lifeView.showLines = pref.getBoolean("enableLines", false);
 		lifeView.invalidate();
 		//Just so setting and clear buttons don't crash the app when pressed before start
 		mainThread = new LifeThread(sim, lifecycle, threadCallback, currentGrid, nextGrid);
@@ -146,9 +148,8 @@ public class MainActivity extends AppCompatActivity implements DialogListener { 
 	private class LifeTouchListener implements View.OnTouchListener {
 		private final Random random = new Random();
 		@Override public boolean onTouch(final View v, final MotionEvent m) {
-			final int x = Math.round(m.getX()), y = Math.round(m.getY());
-			final int iX = x * sim.grid[0].length / screenWidth, iY = y * sim.grid.length / screenHeight;
-			if ((iY >= 0) && (iX >= 0) && (iY < (sim.grid.length - 1)) && (iX < (sim.grid[0].length - 1))) {
+			final int iX = (int) (m.getX() * sim.grid[0].length / screenWidth), iY = (int) (m.getY() * sim.grid.length / screenHeight);
+			if(sim.inBoundary(iX, iY)) {
 				//If not paused, randomly resurrect cells near touch location according to brush size.
 				if (isPlaying) sim.paintRandom(mainThread.overrideList, iX, iY, random);
 					//If paused, resurrect brush size * brush size cells.
