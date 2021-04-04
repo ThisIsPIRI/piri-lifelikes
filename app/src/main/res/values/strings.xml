@@ -16,6 +16,7 @@
 	<string name="others">Others</string>
 	<string name="cellColor">Cell color</string>
 	<string name="backgroundColor">Background color</string>
+	<string name="lineColor">Line color</string>
 	<string name="credits">Credits</string>
 	<string name="save">Save</string>
 	<string name="load">Load</string>
@@ -26,4 +27,5 @@
 	<string name="couldntReadFile">Couldn\'t read the file</string>
 	<string name="saveRationale">The permission is needed to save files.</string>
 	<string name="loadRationale">The permission is needed to read files.</string>
+	<string name="showLines">Show lines</string>
 </resources>
